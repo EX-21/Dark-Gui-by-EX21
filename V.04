@@ -1,6 +1,6 @@
--- Dark Gui Library by EX-21 - V.05 + ColorPicker (Improved Layout & Clickability)
+-- Dark Gui Library by EX-21 - V.04 + ColorPicker Module (Fixed)
 -- Repository: https://github.com/EX-21/Dark-Gui-by-EX21
--- Perbaikan: Color picker inline, tombol di bawah turun otomatis, semua elemen bisa diklik
+-- Fitur: ColorPicker realtime + Save/Restore/Reset Themes + CanvasSize Auto-Update
 
 local Library = {}
 local TweenService = game:GetService("TweenService")
@@ -1135,7 +1135,7 @@ function Library:CreateWindow(config)
     return Window
 end
 
--- Method: CreateColorPicker - IMPROVED: Inline layout, clickable, auto-expand
+-- Method: CreateColorPicker - FIXED: CanvasSize Auto-Update + Clickable
 function Library:CreateColorPicker(tab, config)
     config = config or {}
     local Title = config.Title or "Color"
@@ -1148,8 +1148,9 @@ function Library:CreateColorPicker(tab, config)
     local IsOpen = false
     local content = tab.Content or tab
     
-    -- Main Container Frame (untuk UIListLayout)
+    -- Main Container Frame
     local Container = Instance.new("Frame")
+    Container.Name = "ColorPicker_" .. Title:gsub(" ", "_")
     Container.Size = UDim2.new(1, 0, 0, 32)
     Container.BackgroundTransparency = 1
     Container.BorderSizePixel = 0
@@ -1169,14 +1170,15 @@ function Library:CreateColorPicker(tab, config)
     MakeRound(ToggleBtn, 6)
     AddStroke(ToggleBtn, Theme.Border, 1)
     
-    -- Picker Frame (akan expand di dalam Container)
+    -- Picker Frame
     local PickerFrame = Instance.new("Frame")
-    PickerFrame.Size = UDim2.new(1, 0, 0, 0)
+    PickerFrame.Size = UDim2.new(1, 0, 0, 190)
     PickerFrame.BackgroundColor3 = Theme.Input
     PickerFrame.BackgroundTransparency = Transparency
     PickerFrame.BorderSizePixel = 0
     PickerFrame.Visible = false
     PickerFrame.ZIndex = 100
+    PickerFrame.Position = UDim2.new(0, 0, 0, 32)
     PickerFrame.Parent = Container
     
     -- Header
@@ -1366,13 +1368,11 @@ function Library:CreateColorPicker(tab, config)
         BInp.Text = tostring(math.floor(c.B*255))
         ToggleBtn.Text = "🎨 " .. Title .. "  " .. RGBtoHex(c)
         
-        -- Update indicators
         local h,s,v = Color3.toHSV(c)
         HueInd.Position = UDim2.new(0, 0, h, -1.5)
         SVInd.Position = UDim2.new(s, -4, 1-v, -4)
         if SVOverlay then SVOverlay.ImageColor3 = HSVtoRGB(h, 1, 1) end
         
-        -- Update Theme jika ada ThemeKey
         if ThemeKey and Theme[ThemeKey] then
             Theme[ThemeKey] = c
         end
@@ -1380,23 +1380,33 @@ function Library:CreateColorPicker(tab, config)
         Callback(c, Title, ThemeKey)
     end
     
-    -- Toggle Button Event - EXPAND/COLLAPSE CONTAINER
+    -- CanvasSize Update Helper
+    local function UpdateCanvas()
+        task.defer(function()
+            if content and content:IsA("ScrollingFrame") then
+                content.CanvasSize = UDim2.new(0, 0, 0, content.AbsoluteContentSize.Y + 10)
+            end
+        end)
+    end
+    
+    -- Toggle Button Event
     ToggleBtn.MouseButton1Click:Connect(function()
         IsOpen = not IsOpen
         PickerFrame.Visible = IsOpen
         if IsOpen then 
             UpdateColor(CurrentColor)
-            Container.Size = UDim2.new(1, 0, 0, 222) -- 32 (toggle) + 190 (picker)
-        else
-            Container.Size = UDim2.new(1, 0, 0, 32) -- hanya toggle
         end
+        UpdateCanvas()
     end)
     
     CloseBtn.MouseButton1Click:Connect(function()
         IsOpen = false
         PickerFrame.Visible = false
-        Container.Size = UDim2.new(1, 0, 0, 32)
+        UpdateCanvas()
     end)
+    
+    -- Monitor Container size changes
+    Container:GetPropertyChangedSignal("Size"):Connect(UpdateCanvas)
     
     -- Drag Hue
     local hDrag = false
@@ -1440,7 +1450,10 @@ function Library:CreateColorPicker(tab, config)
     end)
     
     -- Init
-    task.defer(function() UpdateColor(CurrentColor) end)
+    task.defer(function() 
+        UpdateColor(CurrentColor)
+        UpdateCanvas()
+    end)
     
     -- Return API
     return {
@@ -1454,7 +1467,7 @@ function Library:CreateColorPicker(tab, config)
     }
 end
 
--- Method: SaveTheme - Menyimpan tema ke JSON string
+-- Method: SaveTheme
 function Library:SaveTheme()
     local themeData = {}
     for key, color in pairs(Theme) do
@@ -1469,7 +1482,7 @@ function Library:SaveTheme()
     return HttpService:JSONEncode(themeData)
 end
 
--- Method: RestoreTheme - Memulihkan tema dari JSON string
+-- Method: RestoreTheme
 function Library:RestoreTheme(jsonString)
     local success, themeData = pcall(function()
         return HttpService:JSONDecode(jsonString)
@@ -1486,7 +1499,7 @@ function Library:RestoreTheme(jsonString)
     return true
 end
 
--- Method: ResetTheme - Mengembalikan tema ke default
+-- Method: ResetTheme
 function Library:ResetTheme()
     local defaultTheme = {
         Background = Color3.fromRGB(18, 18, 18),
@@ -1506,7 +1519,7 @@ function Library:ResetTheme()
     end
 end
 
--- Ekspos Theme dan Helper Functions agar bisa diakses dari luar
+-- Ekspos Theme dan Helper Functions
 Library.Theme = Theme
 Library.RGBtoHex = RGBtoHex
 Library.HexToColor3 = HexToColor3
