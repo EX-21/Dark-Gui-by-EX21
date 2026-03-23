@@ -1,4 +1,4 @@
--- Dark Gui Library by EX-21 - V.04 + ColorPicker (FINAL SV PERFECT)
+-- Dark Gui Library by EX-21 - V.04 + ColorPicker (FINAL SV CORRECTED)
 -- Repository: https://github.com/EX-21/Dark-Gui-by-EX21
 
 local Library = {}
@@ -1195,7 +1195,7 @@ function Library:CreateWindow(config)
     return Window
 end
 
--- ColorPicker Function - SV AREA PERFECT
+-- ColorPicker Function - SV AREA CORRECTED
 function Library:CreateColorPicker(tab, config)
     config = config or {}
     local Title = config.Title or "Color"
@@ -1320,7 +1320,7 @@ function Library:CreateColorPicker(tab, config)
     HueInd.Parent = HueSlider
     MakeRound(HueInd, 2)
     
-    -- SV Area - PERFECT GRADIENT
+    -- SV Area - CORRECTED IMPLEMENTATION
     local SVArea = Instance.new("Frame")
     SVArea.Size = UDim2.new(0, 80, 0, 80)
     SVArea.Position = UDim2.new(0, 32, 0, 100)
@@ -1330,47 +1330,45 @@ function Library:CreateColorPicker(tab, config)
     SVArea.Parent = PickerFrame
     MakeRound(SVArea, 4)
     
-    -- White gradient overlay (LEFT → RIGHT: white to transparent)
-    local SVWhiteOverlay = Instance.new("Frame")
-    SVWhiteOverlay.Name = "SVWhiteOverlay"
-    SVWhiteOverlay.Size = UDim2.new(1, 0, 1, 0)
-    SVWhiteOverlay.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
-    SVWhiteOverlay.BorderSizePixel = 0
-    SVWhiteOverlay.ZIndex = 102
-    SVWhiteOverlay.Parent = SVArea
-    
+    -- White gradient (LEFT white → RIGHT transparent)
+    local SVWhite = Instance.new("Frame")
+    SVWhite.Size = UDim2.new(1, 0, 1, 0)
+    SVWhite.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+    SVWhite.BorderSizePixel = 0
+    SVWhite.ZIndex = 102
+    SVWhite.Parent = SVArea
+
     local SVWhiteGradient = Instance.new("UIGradient")
     SVWhiteGradient.Color = ColorSequence.new{
         ColorSequenceKeypoint.new(0, Color3.fromRGB(255, 255, 255)),
         ColorSequenceKeypoint.new(1, Color3.fromRGB(255, 255, 255))
     }
     SVWhiteGradient.Transparency = NumberSequence.new{
-        NumberSequenceKeypoint.new(0, 0),   -- Left: OPAQUE WHITE
-        NumberSequenceKeypoint.new(1, 1)    -- Right: FULLY TRANSPARENT
+        NumberSequenceKeypoint.new(0, 0),   -- Left: WHITE (opaque)
+        NumberSequenceKeypoint.new(1, 1)    -- Right: TRANSPARENT
     }
     SVWhiteGradient.Rotation = 0
-    SVWhiteGradient.Parent = SVWhiteOverlay
-    
-    -- Black gradient overlay (TOP → BOTTOM: transparent to black)
-    local SVBlackOverlay = Instance.new("Frame")
-    SVBlackOverlay.Name = "SVBlackOverlay"
-    SVBlackOverlay.Size = UDim2.new(1, 0, 1, 0)
-    SVBlackOverlay.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
-    SVBlackOverlay.BorderSizePixel = 0
-    SVBlackOverlay.ZIndex = 103
-    SVBlackOverlay.Parent = SVArea
-    
+    SVWhiteGradient.Parent = SVWhite
+
+    -- Black gradient (TOP transparent → BOTTOM black)
+    local SVBlack = Instance.new("Frame")
+    SVBlack.Size = UDim2.new(1, 0, 1, 0)
+    SVBlack.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
+    SVBlack.BorderSizePixel = 0
+    SVBlack.ZIndex = 103
+    SVBlack.Parent = SVArea
+
     local SVBlackGradient = Instance.new("UIGradient")
     SVBlackGradient.Color = ColorSequence.new{
         ColorSequenceKeypoint.new(0, Color3.fromRGB(0, 0, 0)),
         ColorSequenceKeypoint.new(1, Color3.fromRGB(0, 0, 0))
     }
     SVBlackGradient.Transparency = NumberSequence.new{
-        NumberSequenceKeypoint.new(0, 1),   -- Top: FULLY TRANSPARENT
-        NumberSequenceKeypoint.new(1, 0)    -- Bottom: OPAQUE BLACK
+        NumberSequenceKeypoint.new(0, 1),   -- Top: TRANSPARENT
+        NumberSequenceKeypoint.new(1, 0)    -- Bottom: BLACK (opaque)
     }
     SVBlackGradient.Rotation = 0
-    SVBlackGradient.Parent = SVBlackOverlay
+    SVBlackGradient.Parent = SVBlack
     
     local SVInd = Instance.new("Frame")
     SVInd.Name = "SVInd"
