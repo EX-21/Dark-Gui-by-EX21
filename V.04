@@ -1,6 +1,5 @@
--- Dark Gui Library by EX-21 - V.04 + ColorPicker (FINAL SV ROTATION 90°)
+-- Dark Gui Library by EX-21 - V.04 + ColorPicker (FINAL - TEXT ALIGNMENT FIXED)
 -- Repository: https://github.com/EX-21/Dark-Gui-by-EX21
--- Reference: Starlight Interface Suite by Nebula-Softworks
 
 local Library = {}
 local TweenService = game:GetService("TweenService")
@@ -1196,7 +1195,7 @@ function Library:CreateWindow(config)
     return Window
 end
 
--- ColorPicker Function - SV AREA FIXED (ROTATION 90°)
+-- ColorPicker Function - TEXT ALIGNMENT FIXED
 function Library:CreateColorPicker(tab, config)
     config = config or {}
     local Title = config.Title or "Color"
@@ -1321,7 +1320,7 @@ function Library:CreateColorPicker(tab, config)
     HueInd.Parent = HueSlider
     MakeRound(HueInd, 2)
     
-    -- SV Area - ROTATION 90° (CRITICAL FIX!)
+    -- SV Area
     local SVArea = Instance.new("Frame")
     SVArea.Size = UDim2.new(0, 80, 0, 80)
     SVArea.Position = UDim2.new(0, 32, 0, 100)
@@ -1352,7 +1351,6 @@ function Library:CreateColorPicker(tab, config)
     SVWhiteGradient.Parent = SVWhite
 
     -- Black gradient (TOP → BOTTOM: transparent to black)
-    -- CRITICAL FIX: Rotation = 90° (VERTICAL gradient)
     local SVBlack = Instance.new("Frame")
     SVBlack.Size = UDim2.new(1, 0, 1, 0)
     SVBlack.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
@@ -1369,7 +1367,7 @@ function Library:CreateColorPicker(tab, config)
         NumberSequenceKeypoint.new(0, 1),   -- Top: FULLY TRANSPARENT
         NumberSequenceKeypoint.new(1, 0)    -- Bottom: OPAQUE BLACK
     }
-    SVBlackGradient.Rotation = 90  -- VERTICAL: Top to Bottom (KEY FIX!)
+    SVBlackGradient.Rotation = 90  -- VERTICAL: Top to Bottom
     SVBlackGradient.Parent = SVBlack
     
     local SVInd = Instance.new("Frame")
