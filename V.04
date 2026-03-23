@@ -1,6 +1,5 @@
--- Dark Gui Library by EX-21 - V.04 + ColorPicker (FINAL COLOR ACCURATE)
+-- Dark Gui Library by EX-21 - V.04 + ColorPicker (FINAL FIXED)
 -- Repository: https://github.com/EX-21/Dark-Gui-by-EX21
--- Fitur: ColorPicker dengan warna akurat + real-time apply ke GUI
 
 local Library = {}
 local TweenService = game:GetService("TweenService")
@@ -24,10 +23,9 @@ local Theme = {
     Warning = Color3.fromRGB(255, 180, 60)
 }
 
--- Reference to GUI elements for real-time update
 local GUIElements = {}
 
--- ColorPicker Helper Functions - FIXED
+-- HSV to RGB conversion
 local function HSVtoRGB(h, s, v)
     local r, g, b = math.abs((h * 6) % 2 - 1) * s - 1, 
                     math.abs((h * 6) % 2 - 2) * s - 1, 
@@ -56,7 +54,6 @@ local function HexToColor3(hex)
     return Color3.fromRGB(255,255,255)
 end
 
--- Apply Theme to GUI Elements
 local function ApplyTheme()
     for _, element in ipairs(GUIElements) do
         if element.Instance and element.Instance.Parent then
@@ -75,7 +72,6 @@ local function ApplyTheme()
     end
 end
 
--- Helper functions
 local function Tween(obj, props, duration)
     duration = duration or 0.3
     local tween = TweenService:Create(obj, TweenInfo.new(duration, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), props)
@@ -100,7 +96,7 @@ local function AddStroke(frame, color, thickness)
 end
 
 local function SetImageSafe(imageLabel, imageId)
-    local success, errorMessage = pcall(function()
+    local success = pcall(function()
         imageLabel.Image = imageId
     end)
     if not success then
@@ -110,7 +106,6 @@ local function SetImageSafe(imageLabel, imageId)
     return true
 end
 
--- Modal konfirmasi
 local function ShowConfirmationModal(screenGui, message, onConfirm)
     local Modal = Instance.new("Frame")
     Modal.BackgroundTransparency = 1
@@ -174,7 +169,6 @@ local function ShowConfirmationModal(screenGui, message, onConfirm)
     end)
 end
 
--- Icons
 local Icons = {
     Home = "rbxassetid://134112637052391",
     Settings = "rbxassetid://121005722030214",
@@ -188,7 +182,6 @@ local Icons = {
     Check = "rbxasset://textures/ui/GuiImage/Checkmark.png"
 }
 
--- MAIN: CreateWindow Function
 function Library:CreateWindow(config)
     config = config or {}
     local WindowTitle = config.Title or "Black UI"
@@ -220,7 +213,6 @@ function Library:CreateWindow(config)
     AddStroke(MainFrame, Theme.Border, 2)
     table.insert(GUIElements, {Instance = MainFrame, Key = "Background", Property = "BackgroundColor3"})
 
-    -- Topbar
     local Topbar = Instance.new("Frame")
     Topbar.Size = UDim2.new(1, 0, 0, 30)
     Topbar.BackgroundColor3 = Theme.Sidebar
@@ -246,19 +238,18 @@ function Library:CreateWindow(config)
     SetImageSafe(LogoIcon, WindowIcon)
     table.insert(GUIElements, {Instance = LogoIcon, Key = "Text", Property = "ImageColor3"})
 
-    local Title = Instance.new("TextLabel")
-    Title.Size = UDim2.new(0, 200, 1, 0)
-    Title.Position = UDim2.new(0, 40, 0, 0)
-    Title.BackgroundTransparency = 1
-    Title.Text = WindowTitle
-    Title.TextColor3 = Theme.Text
-    Title.TextSize = 16
-    Title.Font = Enum.Font.GothamBold
-    Title.TextXAlignment = Enum.TextXAlignment.Left
-    Title.Parent = Topbar
-    table.insert(GUIElements, {Instance = Title, Key = "Text", Property = "TextColor3"})
+    local TitleLabel = Instance.new("TextLabel")
+    TitleLabel.Size = UDim2.new(0, 200, 1, 0)
+    TitleLabel.Position = UDim2.new(0, 40, 0, 0)
+    TitleLabel.BackgroundTransparency = 1
+    TitleLabel.Text = WindowTitle
+    TitleLabel.TextColor3 = Theme.Text
+    TitleLabel.TextSize = 16
+    TitleLabel.Font = Enum.Font.GothamBold
+    TitleLabel.TextXAlignment = Enum.TextXAlignment.Left
+    TitleLabel.Parent = Topbar
+    table.insert(GUIElements, {Instance = TitleLabel, Key = "Text", Property = "TextColor3"})
 
-    -- Minimize Button
     local MinimizeBtn = Instance.new("TextButton")
     MinimizeBtn.Size = UDim2.new(0, 25, 0, 25)
     MinimizeBtn.Position = UDim2.new(1, -72, 0.5, -13)
@@ -278,7 +269,6 @@ function Library:CreateWindow(config)
     SetImageSafe(MinimizeIcon, Icons.Minimize)
     table.insert(GUIElements, {Instance = MinimizeIcon, Key = "Text", Property = "ImageColor3"})
 
-    -- Close Button
     local CloseBtn = Instance.new("TextButton")
     CloseBtn.Size = UDim2.new(0, 25, 0, 25)
     CloseBtn.Position = UDim2.new(1, -36, 0.5, -13)
@@ -298,7 +288,6 @@ function Library:CreateWindow(config)
     SetImageSafe(CloseIcon, Icons.Close)
     table.insert(GUIElements, {Instance = CloseIcon, Key = "Text", Property = "ImageColor3"})
 
-    -- Sidebar
     local Sidebar = Instance.new("Frame")
     Sidebar.Size = UDim2.new(0, 140, 1, -30)
     Sidebar.Position = UDim2.new(0, 0, 0, 30)
@@ -320,7 +309,6 @@ function Library:CreateWindow(config)
     SidebarPadding.PaddingRight = UDim.new(0, 8)
     SidebarPadding.Parent = Sidebar
 
-    -- Content Area
     local ContentArea = Instance.new("Frame")
     ContentArea.Size = UDim2.new(1, -150, 1, -35)
     ContentArea.Position = UDim2.new(0, 145, 0, 35)
@@ -329,7 +317,6 @@ function Library:CreateWindow(config)
     ContentArea.ClipsDescendants = true
     ContentArea.Parent = MainFrame
 
-    -- Dragging logic
     local dragging, dragInput, dragStart, startPos
     local function update(input)
         local delta = input.Position - dragStart
@@ -361,7 +348,6 @@ function Library:CreateWindow(config)
         end
     end)
 
-    -- Floating button
     local FloatingButton = Instance.new("ImageButton")
     FloatingButton.Size = UDim2.new(0, 45, 0, 45)
     FloatingButton.Position = UDim2.new(1, -70, 0, 15)
@@ -520,7 +506,6 @@ function Library:CreateWindow(config)
             ScreenGui = ScreenGui
         }
 
-        -- AddButton
         function Tab:AddButton(config)
             config = config or {}
             local ButtonText = config.Text or "Button"
@@ -591,7 +576,6 @@ function Library:CreateWindow(config)
             return Button
         end
 
-        -- AddToggle
         function Tab:AddToggle(config)
             config = config or {}
             local ToggleText = config.Text or "Toggle"
@@ -678,7 +662,6 @@ function Library:CreateWindow(config)
             }
         end
 
-        -- AddTextbox
         function Tab:AddTextbox(config)
             config = config or {}
             local TextboxText = config.Text or "Input"
@@ -787,7 +770,6 @@ function Library:CreateWindow(config)
             return Input
         end
 
-        -- AddSlider
         function Tab:AddSlider(config)
             config = config or {}
             local SliderText = config.Text or "Slider"
@@ -884,7 +866,6 @@ function Library:CreateWindow(config)
             }
         end
 
-        -- AddDropdown
         function Tab:AddDropdown(config)
             config = config or {}
             local DropdownText = config.Text or "Option"
@@ -1083,7 +1064,6 @@ function Library:CreateWindow(config)
             }
         end
 
-        -- AddLabel
         function Tab:AddLabel(text)
             local LabelFrame = Instance.new("Frame")
             LabelFrame.Size = UDim2.new(1, 0, 0, 25)
@@ -1111,7 +1091,6 @@ function Library:CreateWindow(config)
             }
         end
 
-        -- AddParagraph
         function Tab:AddParagraph(title, content)
             local Frame = Instance.new("Frame")
             Frame.Size = UDim2.new(1, 0, 0, 60)
@@ -1122,41 +1101,40 @@ function Library:CreateWindow(config)
             MakeRound(Frame, 6)
             table.insert(GUIElements, {Instance = Frame, Key = "Input", Property = "BackgroundColor3"})
 
-            local Title = Instance.new("TextLabel")
-            Title.Size = UDim2.new(1, -10, 0, 18)
-            Title.Position = UDim2.new(0, 10, 0, 6)
-            Title.BackgroundTransparency = 1
-            Title.Text = title
-            Title.TextColor3 = Theme.Text
-            Title.TextSize = 14
-            Title.Font = Enum.Font.GothamBold
-            Title.TextXAlignment = Enum.TextXAlignment.Left
-            Title.Parent = Frame
-            table.insert(GUIElements, {Instance = Title, Key = "Text", Property = "TextColor3"})
+            local TitleLabel = Instance.new("TextLabel")
+            TitleLabel.Size = UDim2.new(1, -10, 0, 18)
+            TitleLabel.Position = UDim2.new(0, 10, 0, 6)
+            TitleLabel.BackgroundTransparency = 1
+            TitleLabel.Text = title
+            TitleLabel.TextColor3 = Theme.Text
+            TitleLabel.TextSize = 14
+            TitleLabel.Font = Enum.Font.GothamBold
+            TitleLabel.TextXAlignment = Enum.TextXAlignment.Left
+            TitleLabel.Parent = Frame
+            table.insert(GUIElements, {Instance = TitleLabel, Key = "Text", Property = "TextColor3"})
 
-            local Content = Instance.new("TextLabel")
-            Content.Size = UDim2.new(1, -20, 1, -30)
-            Content.Position = UDim2.new(0, 10, 0, 28)
-            Content.BackgroundTransparency = 1
-            Content.Text = content
-            Content.TextColor3 = Theme.TextDim
-            Content.TextSize = 12
-            Content.Font = Enum.Font.Gotham
-            Content.TextXAlignment = Enum.TextXAlignment.Left
-            Content.TextYAlignment = Enum.TextYAlignment.Top
-            Content.TextWrapped = true
-            Content.Parent = Frame
-            table.insert(GUIElements, {Instance = Content, Key = "TextDim", Property = "TextColor3"})
+            local ContentLabel = Instance.new("TextLabel")
+            ContentLabel.Size = UDim2.new(1, -20, 1, -30)
+            ContentLabel.Position = UDim2.new(0, 10, 0, 28)
+            ContentLabel.BackgroundTransparency = 1
+            ContentLabel.Text = content
+            ContentLabel.TextColor3 = Theme.TextDim
+            ContentLabel.TextSize = 12
+            ContentLabel.Font = Enum.Font.Gotham
+            ContentLabel.TextXAlignment = Enum.TextXAlignment.Left
+            ContentLabel.TextYAlignment = Enum.TextYAlignment.Top
+            ContentLabel.TextWrapped = true
+            ContentLabel.Parent = Frame
+            table.insert(GUIElements, {Instance = ContentLabel, Key = "TextDim", Property = "TextColor3"})
 
             return {
                 Set = function(t, c)
-                    Title.Text = t
-                    Content.Text = c
+                    TitleLabel.Text = t
+                    ContentLabel.Text = c
                 end
             }
         end
 
-        -- AddSection
         function Tab:AddSection(title)
             local SectionFrame = Instance.new("Frame")
             SectionFrame.Size = UDim2.new(1, 0, 0, 22)
@@ -1201,7 +1179,7 @@ function Library:CreateWindow(config)
     return Window
 end
 
--- Method: CreateColorPicker - FINAL COLOR ACCURATE VERSION
+-- ColorPicker Function
 function Library:CreateColorPicker(tab, config)
     config = config or {}
     local Title = config.Title or "Color"
@@ -1213,6 +1191,9 @@ function Library:CreateColorPicker(tab, config)
     local CurrentColor = Default
     local IsOpen = false
     local content = tab.Content or tab
+    
+    -- Store HSV values
+    local currentH, currentS, currentV = Color3.toHSV(CurrentColor)
     
     -- Toggle Button
     local ToggleBtn = Instance.new("TextButton")
@@ -1324,11 +1305,11 @@ function Library:CreateColorPicker(tab, config)
     HueInd.Parent = HueSlider
     MakeRound(HueInd, 2)
     
-    -- SV Area - FIXED COLOR ACCURACY
+    -- SV Area - CRITICAL FIX
     local SVArea = Instance.new("Frame")
     SVArea.Size = UDim2.new(0, 80, 0, 80)
     SVArea.Position = UDim2.new(0, 32, 0, 100)
-    SVArea.BackgroundColor3 = Color3.fromRGB(255,255,255)
+    SVArea.BackgroundColor3 = HSVtoRGB(currentH, 1, 1) -- Set initial hue color
     SVArea.BorderSizePixel = 0
     SVArea.ZIndex = 101
     SVArea.Parent = PickerFrame
@@ -1340,7 +1321,7 @@ function Library:CreateColorPicker(tab, config)
     SVOverlay.Size = UDim2.new(1, 0, 1, 0)
     SVOverlay.BackgroundTransparency = 1
     SVOverlay.Image = "rbxassetid://4155801252"
-    SVOverlay.ZIndex = 101
+    SVOverlay.ZIndex = 102
     SVOverlay.Parent = SVArea
     
     -- SV Black overlay (for value/brightness)
@@ -1350,7 +1331,8 @@ function Library:CreateColorPicker(tab, config)
     SVBlack.BackgroundTransparency = 1
     SVBlack.Image = "rbxassetid://4155801252"
     SVBlack.ImageColor3 = Color3.fromRGB(0,0,0)
-    SVBlack.ZIndex = 102
+    SVBlack.Rotation = 180
+    SVBlack.ZIndex = 103
     SVBlack.Parent = SVArea
     
     local SVInd = Instance.new("Frame")
@@ -1358,7 +1340,7 @@ function Library:CreateColorPicker(tab, config)
     SVInd.Size = UDim2.new(0, 8, 0, 8)
     SVInd.BackgroundColor3 = Color3.fromRGB(255,255,255)
     SVInd.BorderSizePixel = 0
-    SVInd.ZIndex = 103
+    SVInd.ZIndex = 104
     SVInd.Parent = SVArea
     MakeRound(SVInd, 4)
     AddStroke(SVInd, Color3.fromRGB(0,0,0), 1)
@@ -1406,7 +1388,7 @@ function Library:CreateColorPicker(tab, config)
                 local r = ch=="R" and v/255 or CurrentColor.R
                 local g = ch=="G" and v/255 or CurrentColor.G
                 local b = ch=="B" and v/255 or CurrentColor.B
-                UpdateColorFull(Color3.fromRGB(r*255, g*255, b*255))
+                UpdateFromColor(Color3.fromRGB(r*255, g*255, b*255))
             end
         end)
         return I
@@ -1442,7 +1424,7 @@ function Library:CreateColorPicker(tab, config)
             local hx = HexInp.Text:gsub("#","")
             if #hx == 6 then
                 local ok, res = pcall(function() return HexToColor3("#"..hx) end)
-                if ok and res then UpdateColorFull(res)
+                if ok and res then UpdateFromColor(res)
                 else HexInp.Text = RGBtoHex(CurrentColor):upper() end
             else
                 HexInp.Text = RGBtoHex(CurrentColor):upper()
@@ -1450,43 +1432,41 @@ function Library:CreateColorPicker(tab, config)
         end
     end)
     
-    -- Update Color dengan benar
-    local function UpdateColorDirect(c)
-        CurrentColor = c
+    -- Update UI from HSV - CRITICAL FUNCTION
+    local function UpdateFromHSV(h, s, v)
+        currentH, currentS, currentV = h, s, v
+        local color = HSVtoRGB(h, s, v)
+        CurrentColor = color
         
-        -- Update preview box
-        PreviewBox.BackgroundColor3 = c
+        -- Update preview
+        PreviewBox.BackgroundColor3 = color
+        HexLabel.Text = RGBtoHex(color)
+        HexInp.Text = RGBtoHex(color):upper()
+        RInp.Text = tostring(math.floor(color.R*255))
+        GInp.Text = tostring(math.floor(color.G*255))
+        BInp.Text = tostring(math.floor(color.B*255))
+        ToggleBtn.Text = "🎨 " .. Title .. "  " .. RGBtoHex(color)
         
-        -- Update text
-        HexLabel.Text = RGBtoHex(c)
-        HexInp.Text = RGBtoHex(c):upper()
-        RInp.Text = tostring(math.floor(c.R*255))
-        GInp.Text = tostring(math.floor(c.G*255))
-        BInp.Text = tostring(math.floor(c.B*255))
-        ToggleBtn.Text = "🎨 " .. Title .. "  " .. RGBtoHex(c)
+        -- CRITICAL: Update SV area background with current hue
+        SVArea.BackgroundColor3 = HSVtoRGB(h, 1, 1)
         
-        -- Update indicators dari warna
-        local h, s, v = Color3.toHSV(c)
+        -- Update indicator positions
         HueInd.Position = UDim2.new(0, 0, h, -1.5)
         SVInd.Position = UDim2.new(s, -4, 1-v, -4)
         
-        -- Update SV overlay dengan hue yang benar (INI KUNCINYA!)
-        SVOverlay.ImageColor3 = HSVtoRGB(h, 1, 1)
-        
-        -- Update Theme
+        -- Update theme
         if ThemeKey and Theme[ThemeKey] then
-            Theme[ThemeKey] = c
+            Theme[ThemeKey] = color
         end
         
-        -- Apply to GUI
         ApplyTheme()
-        
-        Callback(c, Title, ThemeKey)
+        Callback(color, Title, ThemeKey)
     end
     
-    -- Full Update
-    local function UpdateColorFull(c)
-        UpdateColorDirect(c)
+    -- Update from Color (RGB/Hex input)
+    local function UpdateFromColor(color)
+        local h, s, v = Color3.toHSV(color)
+        UpdateFromHSV(h, s, v)
     end
     
     -- Toggle Button Event
@@ -1495,7 +1475,7 @@ function Library:CreateColorPicker(tab, config)
         PickerFrame.Visible = IsOpen
         if IsOpen then
             PickerFrame.Size = UDim2.new(1, 0, 0, 190)
-            UpdateColorFull(CurrentColor)
+            UpdateFromHSV(currentH, currentS, currentV)
         else
             PickerFrame.Size = UDim2.new(1, 0, 0, 0)
         end
@@ -1531,13 +1511,7 @@ function Library:CreateColorPicker(tab, config)
                 local y = math.clamp((pos.Y - absPos.Y) / absSize.Y, 0, 1)
                 
                 HueInd.Position = UDim2.new(0, 0, y, -1.5)
-                
-                -- Get current SV
-                local s = SVInd.Position.X.Scale
-                local v = 1 - SVInd.Position.Y.Scale
-                
-                local newColor = HSVtoRGB(y, s, v)
-                UpdateColorDirect(newColor)
+                UpdateFromHSV(y, currentS, currentV)
             end
             upd(inp.Position)
             
@@ -1570,13 +1544,7 @@ function Library:CreateColorPicker(tab, config)
                 local y = math.clamp((pos.Y - absPos.Y) / absSize.Y, 0, 1)
                 
                 SVInd.Position = UDim2.new(x, -4, y, -4)
-                
-                -- Get current Hue
-                local h = HueInd.Position.Y.Scale
-                
-                -- y inverted untuk value
-                local newColor = HSVtoRGB(h, x, 1-y)
-                UpdateColorDirect(newColor)
+                UpdateFromHSV(currentH, x, 1-y)
             end
             upd(inp.Position)
             
@@ -1600,12 +1568,12 @@ function Library:CreateColorPicker(tab, config)
     -- Init
     task.defer(function() 
         if IsOpen then
-            UpdateColorFull(CurrentColor)
+            UpdateFromHSV(currentH, currentS, currentV)
         end
     end)
     
     return {
-        SetColor = UpdateColorFull,
+        SetColor = UpdateFromColor,
         GetColor = function() return CurrentColor end,
         ToggleBtn = ToggleBtn,
         PickerFrame = PickerFrame,
@@ -1616,7 +1584,7 @@ function Library:CreateColorPicker(tab, config)
     }
 end
 
--- Method: SaveTheme
+-- Save/Restore/Reset Theme Functions
 function Library:SaveTheme()
     local themeData = {}
     for key, color in pairs(Theme) do
@@ -1631,7 +1599,6 @@ function Library:SaveTheme()
     return HttpService:JSONEncode(themeData)
 end
 
--- Method: RestoreTheme
 function Library:RestoreTheme(jsonString)
     local success, themeData = pcall(function()
         return HttpService:JSONDecode(jsonString)
@@ -1649,7 +1616,6 @@ function Library:RestoreTheme(jsonString)
     return true
 end
 
--- Method: ResetTheme
 function Library:ResetTheme()
     local defaultTheme = {
         Background = Color3.fromRGB(18, 18, 18),
@@ -1670,7 +1636,7 @@ function Library:ResetTheme()
     ApplyTheme()
 end
 
--- Ekspos Theme dan Helper Functions
+-- Ekspos
 Library.Theme = Theme
 Library.RGBtoHex = RGBtoHex
 Library.HexToColor3 = HexToColor3
