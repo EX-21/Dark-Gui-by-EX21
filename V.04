@@ -1,4 +1,4 @@
--- Dark Gui Library by EX-21 - V.04 + ColorPicker (FINAL WORKING)
+-- Dark Gui Library by EX-21 - V.04 + ColorPicker (FINAL FIXED)
 -- Repository: https://github.com/EX-21/Dark-Gui-by-EX21
 
 local Library = {}
@@ -1179,7 +1179,7 @@ function Library:CreateWindow(config)
     return Window
 end
 
--- ColorPicker Function - FIXED SV AREA WITH UIGRADIENT
+-- ColorPicker Function - FINAL COLOR ACCURATE
 function Library:CreateColorPicker(tab, config)
     config = config or {}
     local Title = config.Title or "Color"
@@ -1192,7 +1192,6 @@ function Library:CreateColorPicker(tab, config)
     local IsOpen = false
     local content = tab.Content or tab
     
-    -- Store HSV values
     local currentH, currentS, currentV = Color3.toHSV(CurrentColor)
     
     -- Toggle Button
@@ -1305,7 +1304,7 @@ function Library:CreateColorPicker(tab, config)
     HueInd.Parent = HueSlider
     MakeRound(HueInd, 2)
     
-    -- SV Area - FIXED WITH UIGRADIENT (NO ROTATION ISSUES)
+    -- SV Area - CORRECT GRADIENT DIRECTION
     local SVArea = Instance.new("Frame")
     SVArea.Size = UDim2.new(0, 80, 0, 80)
     SVArea.Position = UDim2.new(0, 32, 0, 100)
@@ -1315,20 +1314,20 @@ function Library:CreateColorPicker(tab, config)
     SVArea.Parent = PickerFrame
     MakeRound(SVArea, 4)
     
-    -- White gradient for saturation (LEFT to RIGHT)
+    -- White gradient (LEFT transparent → RIGHT white) for saturation
     local SVWhiteGradient = Instance.new("UIGradient")
     SVWhiteGradient.Color = ColorSequence.new{
         ColorSequenceKeypoint.new(0, Color3.fromRGB(255, 255, 255)),
         ColorSequenceKeypoint.new(1, Color3.fromRGB(255, 255, 255))
     }
     SVWhiteGradient.Transparency = NumberSequence.new{
-        NumberSequenceKeypoint.new(0, 0),
-        NumberSequenceKeypoint.new(1, 1)
+        NumberSequenceKeypoint.new(0, 1),
+        NumberSequenceKeypoint.new(1, 0)
     }
     SVWhiteGradient.Rotation = 0
     SVWhiteGradient.Parent = SVArea
     
-    -- Black gradient for value (TOP to BOTTOM)
+    -- Black gradient (TOP transparent → BOTTOM black) for value
     local SVBlackGradient = Instance.new("UIGradient")
     SVBlackGradient.Color = ColorSequence.new{
         ColorSequenceKeypoint.new(0, Color3.fromRGB(0, 0, 0)),
@@ -1444,7 +1443,6 @@ function Library:CreateColorPicker(tab, config)
         local color = HSVtoRGB(h, s, v)
         CurrentColor = color
         
-        -- Update preview
         PreviewBox.BackgroundColor3 = color
         HexLabel.Text = RGBtoHex(color)
         HexInp.Text = RGBtoHex(color):upper()
@@ -1453,14 +1451,11 @@ function Library:CreateColorPicker(tab, config)
         BInp.Text = tostring(math.floor(color.B*255))
         ToggleBtn.Text = "🎨 " .. Title .. "  " .. RGBtoHex(color)
         
-        -- CRITICAL: Update SV area background with current hue
         SVArea.BackgroundColor3 = HSVtoRGB(h, 1, 1)
         
-        -- Update indicator positions
         HueInd.Position = UDim2.new(0, 0, h, -1.5)
         SVInd.Position = UDim2.new(s, -4, 1-v, -4)
         
-        -- Update theme
         if ThemeKey and Theme[ThemeKey] then
             Theme[ThemeKey] = color
         end
@@ -1469,18 +1464,18 @@ function Library:CreateColorPicker(tab, config)
         Callback(color, Title, ThemeKey)
     end
     
-    -- Update from Color (RGB/Hex input)
     local function UpdateFromColor(color)
         local h, s, v = Color3.toHSV(color)
         UpdateFromHSV(h, s, v)
     end
     
-    -- Toggle Button Event
     ToggleBtn.MouseButton1Click:Connect(function()
         IsOpen = not IsOpen
         PickerFrame.Visible = IsOpen
         if IsOpen then
             PickerFrame.Size = UDim2.new(1, 0, 0, 190)
+            HueInd.Position = UDim2.new(0, 0, currentH, -1.5)
+            SVInd.Position = UDim2.new(currentS, -4, 1-currentV, -4)
             UpdateFromHSV(currentH, currentS, currentV)
         else
             PickerFrame.Size = UDim2.new(1, 0, 0, 0)
@@ -1493,7 +1488,6 @@ function Library:CreateColorPicker(tab, config)
         end)
     end)
     
-    -- Close Button Event
     CloseBtn.MouseButton1Click:Connect(function()
         IsOpen = false
         PickerFrame.Visible = false
@@ -1506,7 +1500,6 @@ function Library:CreateColorPicker(tab, config)
         end)
     end)
     
-    -- Drag Hue
     local hDrag = false
     HueSlider.InputBegan:Connect(function(inp)
         if inp.UserInputType == Enum.UserInputType.MouseButton1 or inp.UserInputType == Enum.UserInputType.Touch then
@@ -1538,7 +1531,6 @@ function Library:CreateColorPicker(tab, config)
         end
     end)
     
-    -- Drag SV
     local svDrag = false
     SVArea.InputBegan:Connect(function(inp)
         if inp.UserInputType == Enum.UserInputType.MouseButton1 or inp.UserInputType == Enum.UserInputType.Touch then
@@ -1571,7 +1563,6 @@ function Library:CreateColorPicker(tab, config)
         end
     end)
     
-    -- Init
     task.defer(function() 
         if IsOpen then
             UpdateFromHSV(currentH, currentS, currentV)
@@ -1590,7 +1581,6 @@ function Library:CreateColorPicker(tab, config)
     }
 end
 
--- Save/Restore/Reset Theme Functions
 function Library:SaveTheme()
     local themeData = {}
     for key, color in pairs(Theme) do
@@ -1642,7 +1632,6 @@ function Library:ResetTheme()
     ApplyTheme()
 end
 
--- Ekspos
 Library.Theme = Theme
 Library.RGBtoHex = RGBtoHex
 Library.HexToColor3 = HexToColor3
