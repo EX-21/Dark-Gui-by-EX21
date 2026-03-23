@@ -1,4 +1,4 @@
--- Dark Gui Library by EX-21 - V.04 + ColorPicker (FINAL FIXED)
+-- Dark Gui Library by EX-21 - V.04 + ColorPicker (FINAL HUE FIXED)
 -- Repository: https://github.com/EX-21/Dark-Gui-by-EX21
 
 local Library = {}
@@ -1179,7 +1179,7 @@ function Library:CreateWindow(config)
     return Window
 end
 
--- ColorPicker Function - FIXED SV AREA COLOR
+-- ColorPicker Function - HUE SLIDER FIXED
 function Library:CreateColorPicker(tab, config)
     config = config or {}
     local Title = config.Title or "Color"
@@ -1272,7 +1272,7 @@ function Library:CreateColorPicker(tab, config)
     HexLabel.Parent = PickerFrame
     table.insert(GUIElements, {Instance = HexLabel, Key = "TextDim", Property = "TextColor3"})
     
-    -- Hue Slider
+    -- Hue Slider - FIXED GRADIENT TO MATCH HSV
     local HueSlider = Instance.new("Frame")
     HueSlider.Size = UDim2.new(0, 12, 0, 80)
     HueSlider.Position = UDim2.new(0, 15, 0, 100)
@@ -1282,17 +1282,20 @@ function Library:CreateColorPicker(tab, config)
     HueSlider.Parent = PickerFrame
     MakeRound(HueSlider, 3)
     
+    -- CRITICAL: Gradient colors MUST match HSV color wheel
+    -- Y position 0 (top) = Hue 0 (Red)
+    -- Y position 1 (bottom) = Hue 1 (Red)
     local HueGrad = Instance.new("UIGradient")
     HueGrad.Color = ColorSequence.new{
-        ColorSequenceKeypoint.new(0, Color3.fromRGB(255,0,0)),
-        ColorSequenceKeypoint.new(0.17, Color3.fromRGB(255,255,0)),
-        ColorSequenceKeypoint.new(0.33, Color3.fromRGB(0,255,0)),
-        ColorSequenceKeypoint.new(0.5, Color3.fromRGB(0,255,255)),
-        ColorSequenceKeypoint.new(0.67, Color3.fromRGB(0,0,255)),
-        ColorSequenceKeypoint.new(0.83, Color3.fromRGB(255,0,255)),
-        ColorSequenceKeypoint.new(1, Color3.fromRGB(255,0,0))
+        ColorSequenceKeypoint.new(0.00, Color3.fromRGB(255, 0, 0)),     -- Red (top)
+        ColorSequenceKeypoint.new(0.17, Color3.fromRGB(255, 255, 0)),   -- Yellow
+        ColorSequenceKeypoint.new(0.33, Color3.fromRGB(0, 255, 0)),     -- Green
+        ColorSequenceKeypoint.new(0.50, Color3.fromRGB(0, 255, 255)),   -- Cyan
+        ColorSequenceKeypoint.new(0.67, Color3.fromRGB(0, 0, 255)),     -- Blue
+        ColorSequenceKeypoint.new(0.83, Color3.fromRGB(255, 0, 255)),   -- Magenta
+        ColorSequenceKeypoint.new(1.00, Color3.fromRGB(255, 0, 0))      -- Red (bottom)
     }
-    HueGrad.Rotation = 90
+    HueGrad.Rotation = 90  -- Vertical gradient (top to bottom)
     HueGrad.Parent = HueSlider
     
     local HueInd = Instance.new("Frame")
@@ -1304,11 +1307,11 @@ function Library:CreateColorPicker(tab, config)
     HueInd.Parent = HueSlider
     MakeRound(HueInd, 2)
     
-    -- SV Area - FIXED: Background color update setiap kali hue berubah
+    -- SV Area
     local SVArea = Instance.new("Frame")
     SVArea.Size = UDim2.new(0, 80, 0, 80)
     SVArea.Position = UDim2.new(0, 32, 0, 100)
-    SVArea.BackgroundColor3 = HSVtoRGB(currentH, 1, 1) -- CRITICAL: Set initial color
+    SVArea.BackgroundColor3 = HSVtoRGB(currentH, 1, 1)
     SVArea.BorderSizePixel = 0
     SVArea.ZIndex = 101
     SVArea.Parent = PickerFrame
@@ -1452,7 +1455,7 @@ function Library:CreateColorPicker(tab, config)
         BInp.Text = tostring(math.floor(color.B*255))
         ToggleBtn.Text = "🎨 " .. Title .. "  " .. RGBtoHex(color)
         
-        -- CRITICAL: Update SV area background dengan hue yang benar
+        -- Update SV area background with hue
         SVArea.BackgroundColor3 = HSVtoRGB(h, 1, 1)
         
         -- Update indicator positions
@@ -1480,7 +1483,6 @@ function Library:CreateColorPicker(tab, config)
         PickerFrame.Visible = IsOpen
         if IsOpen then
             PickerFrame.Size = UDim2.new(1, 0, 0, 190)
-            -- CRITICAL: Set SVArea background saat pertama kali buka
             SVArea.BackgroundColor3 = HSVtoRGB(currentH, 1, 1)
             HueInd.Position = UDim2.new(0, 0, currentH, -1.5)
             SVInd.Position = UDim2.new(currentS, -4, 1-currentV, -4)
@@ -1509,7 +1511,7 @@ function Library:CreateColorPicker(tab, config)
         end)
     end)
     
-    -- Drag Hue
+    -- Drag Hue - FIXED: Y position = Hue value directly
     local hDrag = false
     HueSlider.InputBegan:Connect(function(inp)
         if inp.UserInputType == Enum.UserInputType.MouseButton1 or inp.UserInputType == Enum.UserInputType.Touch then
@@ -1517,9 +1519,13 @@ function Library:CreateColorPicker(tab, config)
             local function upd(pos)
                 local absPos = HueSlider.AbsolutePosition
                 local absSize = HueSlider.AbsoluteSize
+                -- Y from top (0) to bottom (1) = Hue from 0 to 1
                 local y = math.clamp((pos.Y - absPos.Y) / absSize.Y, 0, 1)
                 
+                -- Update indicator position
                 HueInd.Position = UDim2.new(0, 0, y, -1.5)
+                
+                -- y IS the hue value
                 UpdateFromHSV(y, currentS, currentV)
             end
             upd(inp.Position)
