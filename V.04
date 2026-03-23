@@ -1179,7 +1179,7 @@ function Library:CreateWindow(config)
     return Window
 end
 
--- ColorPicker Function - FINAL COLOR ACCURATE
+-- ColorPicker Function - FIXED SV AREA COLOR
 function Library:CreateColorPicker(tab, config)
     config = config or {}
     local Title = config.Title or "Color"
@@ -1304,11 +1304,11 @@ function Library:CreateColorPicker(tab, config)
     HueInd.Parent = HueSlider
     MakeRound(HueInd, 2)
     
-    -- SV Area - CORRECT GRADIENT DIRECTION
+    -- SV Area - FIXED: Background color update setiap kali hue berubah
     local SVArea = Instance.new("Frame")
     SVArea.Size = UDim2.new(0, 80, 0, 80)
     SVArea.Position = UDim2.new(0, 32, 0, 100)
-    SVArea.BackgroundColor3 = HSVtoRGB(currentH, 1, 1)
+    SVArea.BackgroundColor3 = HSVtoRGB(currentH, 1, 1) -- CRITICAL: Set initial color
     SVArea.BorderSizePixel = 0
     SVArea.ZIndex = 101
     SVArea.Parent = PickerFrame
@@ -1443,6 +1443,7 @@ function Library:CreateColorPicker(tab, config)
         local color = HSVtoRGB(h, s, v)
         CurrentColor = color
         
+        -- Update preview
         PreviewBox.BackgroundColor3 = color
         HexLabel.Text = RGBtoHex(color)
         HexInp.Text = RGBtoHex(color):upper()
@@ -1451,11 +1452,14 @@ function Library:CreateColorPicker(tab, config)
         BInp.Text = tostring(math.floor(color.B*255))
         ToggleBtn.Text = "🎨 " .. Title .. "  " .. RGBtoHex(color)
         
+        -- CRITICAL: Update SV area background dengan hue yang benar
         SVArea.BackgroundColor3 = HSVtoRGB(h, 1, 1)
         
+        -- Update indicator positions
         HueInd.Position = UDim2.new(0, 0, h, -1.5)
         SVInd.Position = UDim2.new(s, -4, 1-v, -4)
         
+        -- Update theme
         if ThemeKey and Theme[ThemeKey] then
             Theme[ThemeKey] = color
         end
@@ -1464,16 +1468,20 @@ function Library:CreateColorPicker(tab, config)
         Callback(color, Title, ThemeKey)
     end
     
+    -- Update from Color
     local function UpdateFromColor(color)
         local h, s, v = Color3.toHSV(color)
         UpdateFromHSV(h, s, v)
     end
     
+    -- Toggle Button Event
     ToggleBtn.MouseButton1Click:Connect(function()
         IsOpen = not IsOpen
         PickerFrame.Visible = IsOpen
         if IsOpen then
             PickerFrame.Size = UDim2.new(1, 0, 0, 190)
+            -- CRITICAL: Set SVArea background saat pertama kali buka
+            SVArea.BackgroundColor3 = HSVtoRGB(currentH, 1, 1)
             HueInd.Position = UDim2.new(0, 0, currentH, -1.5)
             SVInd.Position = UDim2.new(currentS, -4, 1-currentV, -4)
             UpdateFromHSV(currentH, currentS, currentV)
@@ -1488,6 +1496,7 @@ function Library:CreateColorPicker(tab, config)
         end)
     end)
     
+    -- Close Button Event
     CloseBtn.MouseButton1Click:Connect(function()
         IsOpen = false
         PickerFrame.Visible = false
@@ -1500,6 +1509,7 @@ function Library:CreateColorPicker(tab, config)
         end)
     end)
     
+    -- Drag Hue
     local hDrag = false
     HueSlider.InputBegan:Connect(function(inp)
         if inp.UserInputType == Enum.UserInputType.MouseButton1 or inp.UserInputType == Enum.UserInputType.Touch then
@@ -1531,6 +1541,7 @@ function Library:CreateColorPicker(tab, config)
         end
     end)
     
+    -- Drag SV
     local svDrag = false
     SVArea.InputBegan:Connect(function(inp)
         if inp.UserInputType == Enum.UserInputType.MouseButton1 or inp.UserInputType == Enum.UserInputType.Touch then
@@ -1563,6 +1574,7 @@ function Library:CreateColorPicker(tab, config)
         end
     end)
     
+    -- Init
     task.defer(function() 
         if IsOpen then
             UpdateFromHSV(currentH, currentS, currentV)
@@ -1581,6 +1593,7 @@ function Library:CreateColorPicker(tab, config)
     }
 end
 
+-- Save/Restore/Reset Theme Functions
 function Library:SaveTheme()
     local themeData = {}
     for key, color in pairs(Theme) do
@@ -1632,6 +1645,7 @@ function Library:ResetTheme()
     ApplyTheme()
 end
 
+-- Ekspos
 Library.Theme = Theme
 Library.RGBtoHex = RGBtoHex
 Library.HexToColor3 = HexToColor3
