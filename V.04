@@ -1,4 +1,4 @@
--- Dark Gui Library by EX-21 - V.04 + ColorPicker (FINAL SV CORRECTED)
+-- Dark Gui Library by EX-21 - V.04 + ColorPicker (FINAL SV WORKING)
 -- Repository: https://github.com/EX-21/Dark-Gui-by-EX21
 
 local Library = {}
@@ -1195,7 +1195,7 @@ function Library:CreateWindow(config)
     return Window
 end
 
--- ColorPicker Function - SV AREA CORRECTED
+-- ColorPicker Function - SV AREA WORKING WITH IMAGELABEL
 function Library:CreateColorPicker(tab, config)
     config = config or {}
     local Title = config.Title or "Color"
@@ -1320,7 +1320,7 @@ function Library:CreateColorPicker(tab, config)
     HueInd.Parent = HueSlider
     MakeRound(HueInd, 2)
     
-    -- SV Area - CORRECTED WITH PROPER BASE COLORS
+    -- SV Area - WORKING WITH IMAGELABEL GRADIENTS
     local SVArea = Instance.new("Frame")
     SVArea.Size = UDim2.new(0, 80, 0, 80)
     SVArea.Position = UDim2.new(0, 32, 0, 100)
@@ -1330,49 +1330,25 @@ function Library:CreateColorPicker(tab, config)
     SVArea.Parent = PickerFrame
     MakeRound(SVArea, 4)
     
-    -- White gradient overlay (LEFT transparent → RIGHT white)
-    -- KEY FIX: BackgroundColor3 must be WHITE, not transparent
-    local SVWhiteOverlay = Instance.new("Frame")
-    SVWhiteOverlay.Size = UDim2.new(1, 0, 1, 0)
-    SVWhiteOverlay.BackgroundColor3 = Color3.fromRGB(255, 255, 255)  -- WHITE BASE
-    SVWhiteOverlay.BackgroundTransparency = 0
-    SVWhiteOverlay.BorderSizePixel = 0
-    SVWhiteOverlay.ZIndex = 102
-    SVWhiteOverlay.Parent = SVArea
+    -- White gradient ImageLabel (LEFT → RIGHT: white to transparent)
+    local SVWhite = Instance.new("ImageLabel")
+    SVWhite.Name = "SVWhite"
+    SVWhite.Size = UDim2.new(1, 0, 1, 0)
+    SVWhite.BackgroundTransparency = 1
+    SVWhite.Image = "rbxassetid://4155801252"
+    SVWhite.ZIndex = 102
+    SVWhite.Parent = SVArea
     
-    local SVWhiteGradient = Instance.new("UIGradient")
-    SVWhiteGradient.Color = ColorSequence.new{
-        ColorSequenceKeypoint.new(0, Color3.fromRGB(255, 255, 255)),
-        ColorSequenceKeypoint.new(1, Color3.fromRGB(255, 255, 255))
-    }
-    SVWhiteGradient.Transparency = NumberSequence.new{
-        NumberSequenceKeypoint.new(0, 1),   -- Left: FULLY TRANSPARENT (show hue color)
-        NumberSequenceKeypoint.new(1, 0)    -- Right: OPAQUE WHITE
-    }
-    SVWhiteGradient.Rotation = 0  -- Horizontal gradient
-    SVWhiteGradient.Parent = SVWhiteOverlay
-    
-    -- Black gradient overlay (TOP transparent → BOTTOM black)
-    -- KEY FIX: BackgroundColor3 must be BLACK, not transparent
-    local SVBlackOverlay = Instance.new("Frame")
-    SVBlackOverlay.Size = UDim2.new(1, 0, 1, 0)
-    SVBlackOverlay.BackgroundColor3 = Color3.fromRGB(0, 0, 0)  -- BLACK BASE
-    SVBlackOverlay.BackgroundTransparency = 0
-    SVBlackOverlay.BorderSizePixel = 0
-    SVBlackOverlay.ZIndex = 103
-    SVBlackOverlay.Parent = SVArea
-    
-    local SVBlackGradient = Instance.new("UIGradient")
-    SVBlackGradient.Color = ColorSequence.new{
-        ColorSequenceKeypoint.new(0, Color3.fromRGB(0, 0, 0)),
-        ColorSequenceKeypoint.new(1, Color3.fromRGB(0, 0, 0))
-    }
-    SVBlackGradient.Transparency = NumberSequence.new{
-        NumberSequenceKeypoint.new(0, 1),   -- Top: FULLY TRANSPARENT
-        NumberSequenceKeypoint.new(1, 0)    -- Bottom: OPAQUE BLACK
-    }
-    SVBlackGradient.Rotation = 0  -- Vertical gradient
-    SVBlackGradient.Parent = SVBlackOverlay
+    -- Black gradient ImageLabel (TOP → BOTTOM: transparent to black)
+    local SVBlack = Instance.new("ImageLabel")
+    SVBlack.Name = "SVBlack"
+    SVBlack.Size = UDim2.new(1, 0, 1, 0)
+    SVBlack.BackgroundTransparency = 1
+    SVBlack.Image = "rbxassetid://4155801252"
+    SVBlack.ImageColor3 = Color3.fromRGB(0, 0, 0)
+    SVBlack.Rotation = 270  -- Rotate to make gradient go TOP to BOTTOM
+    SVBlack.ZIndex = 103
+    SVBlack.Parent = SVArea
     
     local SVInd = Instance.new("Frame")
     SVInd.Name = "SVInd"
