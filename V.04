@@ -1,4 +1,4 @@
--- Dark Gui Library by EX-21 - V.04 + ColorPicker (FINAL SV PERFECT)
+-- Dark Gui Library by EX-21 - V.04 + ColorPicker (FINAL SV CORRECTED)
 -- Repository: https://github.com/EX-21/Dark-Gui-by-EX21
 
 local Library = {}
@@ -1195,7 +1195,7 @@ function Library:CreateWindow(config)
     return Window
 end
 
--- ColorPicker Function - SV AREA PERFECT WITH CORRECT ROTATION
+-- ColorPicker Function - SV AREA CORRECTED ROTATION 270°
 function Library:CreateColorPicker(tab, config)
     config = config or {}
     local Title = config.Title or "Color"
@@ -1320,7 +1320,7 @@ function Library:CreateColorPicker(tab, config)
     HueInd.Parent = HueSlider
     MakeRound(HueInd, 2)
     
-    -- SV Area - PERFECT WITH CORRECT ROTATION
+    -- SV Area - CORRECTED ROTATION 270°
     local SVArea = Instance.new("Frame")
     SVArea.Size = UDim2.new(0, 80, 0, 80)
     SVArea.Position = UDim2.new(0, 32, 0, 100)
@@ -1330,8 +1330,7 @@ function Library:CreateColorPicker(tab, config)
     SVArea.Parent = PickerFrame
     MakeRound(SVArea, 4)
     
-    -- White gradient ImageLabel (LEFT → RIGHT: white to transparent)
-    -- Asset: 4155801252 (white gradient)
+    -- White gradient (LEFT → RIGHT: white to transparent)
     local SVWhite = Instance.new("ImageLabel")
     SVWhite.Name = "SVWhite"
     SVWhite.Size = UDim2.new(1, 0, 1, 0)
@@ -1340,15 +1339,15 @@ function Library:CreateColorPicker(tab, config)
     SVWhite.ZIndex = 102
     SVWhite.Parent = SVArea
     
-    -- Black gradient ImageLabel (TOP → BOTTOM: transparent to black)
-    -- KEY FIX: Rotation = 90 (NOT 270) for correct TOP→BOTTOM gradient
+    -- Black gradient (TOP → BOTTOM: transparent to black)
+    -- KEY FIX: Rotation 270° for correct TOP (transparent) → BOTTOM (black)
     local SVBlack = Instance.new("ImageLabel")
     SVBlack.Name = "SVBlack"
     SVBlack.Size = UDim2.new(1, 0, 1, 0)
     SVBlack.BackgroundTransparency = 1
     SVBlack.Image = "rbxassetid://4155801252"
     SVBlack.ImageColor3 = Color3.fromRGB(0, 0, 0)
-    SVBlack.Rotation = 90  -- ROTATION 90 for TOP→BOTTOM gradient
+    SVBlack.Rotation = 270  -- ROTATION 270° (NOT 90°!)
     SVBlack.ZIndex = 103
     SVBlack.Parent = SVArea
     
