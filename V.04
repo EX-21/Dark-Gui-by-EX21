@@ -1,5 +1,6 @@
--- Dark Gui Library by EX-21 - V.04 + ColorPicker (FINAL SV CORRECTED)
+-- Dark Gui Library by EX-21 - V.04 + ColorPicker (FINAL SV STARLIGHT METHOD)
 -- Repository: https://github.com/EX-21/Dark-Gui-by-EX21
+-- Reference: Starlight Interface Suite by Nebula-Softworks
 
 local Library = {}
 local TweenService = game:GetService("TweenService")
@@ -1195,7 +1196,7 @@ function Library:CreateWindow(config)
     return Window
 end
 
--- ColorPicker Function - SV AREA CORRECTED
+-- ColorPicker Function - SV AREA USING STARLIGHT METHOD
 function Library:CreateColorPicker(tab, config)
     config = config or {}
     local Title = config.Title or "Color"
@@ -1320,7 +1321,7 @@ function Library:CreateColorPicker(tab, config)
     HueInd.Parent = HueSlider
     MakeRound(HueInd, 2)
     
-    -- SV Area - CORRECTED IMPLEMENTATION
+    -- SV Area - STARLIGHT METHOD (Reference from Starlight Interface Suite)
     local SVArea = Instance.new("Frame")
     SVArea.Size = UDim2.new(0, 80, 0, 80)
     SVArea.Position = UDim2.new(0, 32, 0, 100)
