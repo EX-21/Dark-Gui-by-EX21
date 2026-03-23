@@ -1,4 +1,4 @@
--- Dark Gui Library by EX-21 - V.04 + ColorPicker (FINAL SV STARLIGHT METHOD)
+-- Dark Gui Library by EX-21 - V.04 + ColorPicker (FINAL SV ROTATION 90°)
 -- Repository: https://github.com/EX-21/Dark-Gui-by-EX21
 -- Reference: Starlight Interface Suite by Nebula-Softworks
 
@@ -1196,7 +1196,7 @@ function Library:CreateWindow(config)
     return Window
 end
 
--- ColorPicker Function - SV AREA USING STARLIGHT METHOD
+-- ColorPicker Function - SV AREA FIXED (ROTATION 90°)
 function Library:CreateColorPicker(tab, config)
     config = config or {}
     local Title = config.Title or "Color"
@@ -1321,7 +1321,7 @@ function Library:CreateColorPicker(tab, config)
     HueInd.Parent = HueSlider
     MakeRound(HueInd, 2)
     
-    -- SV Area - STARLIGHT METHOD (Reference from Starlight Interface Suite)
+    -- SV Area - ROTATION 90° (CRITICAL FIX!)
     local SVArea = Instance.new("Frame")
     SVArea.Size = UDim2.new(0, 80, 0, 80)
     SVArea.Position = UDim2.new(0, 32, 0, 100)
@@ -1331,7 +1331,7 @@ function Library:CreateColorPicker(tab, config)
     SVArea.Parent = PickerFrame
     MakeRound(SVArea, 4)
     
-    -- White gradient (LEFT white → RIGHT transparent)
+    -- White gradient (LEFT → RIGHT: white to transparent)
     local SVWhite = Instance.new("Frame")
     SVWhite.Size = UDim2.new(1, 0, 1, 0)
     SVWhite.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
@@ -1345,13 +1345,14 @@ function Library:CreateColorPicker(tab, config)
         ColorSequenceKeypoint.new(1, Color3.fromRGB(255, 255, 255))
     }
     SVWhiteGradient.Transparency = NumberSequence.new{
-        NumberSequenceKeypoint.new(0, 0),   -- Left: WHITE (opaque)
-        NumberSequenceKeypoint.new(1, 1)    -- Right: TRANSPARENT
+        NumberSequenceKeypoint.new(0, 0),   -- Left: OPAQUE WHITE
+        NumberSequenceKeypoint.new(1, 1)    -- Right: FULLY TRANSPARENT
     }
-    SVWhiteGradient.Rotation = 0
+    SVWhiteGradient.Rotation = 0  -- Horizontal: Left to Right
     SVWhiteGradient.Parent = SVWhite
 
-    -- Black gradient (TOP transparent → BOTTOM black)
+    -- Black gradient (TOP → BOTTOM: transparent to black)
+    -- CRITICAL FIX: Rotation = 90° (VERTICAL gradient)
     local SVBlack = Instance.new("Frame")
     SVBlack.Size = UDim2.new(1, 0, 1, 0)
     SVBlack.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
@@ -1365,10 +1366,10 @@ function Library:CreateColorPicker(tab, config)
         ColorSequenceKeypoint.new(1, Color3.fromRGB(0, 0, 0))
     }
     SVBlackGradient.Transparency = NumberSequence.new{
-        NumberSequenceKeypoint.new(0, 1),   -- Top: TRANSPARENT
-        NumberSequenceKeypoint.new(1, 0)    -- Bottom: BLACK (opaque)
+        NumberSequenceKeypoint.new(0, 1),   -- Top: FULLY TRANSPARENT
+        NumberSequenceKeypoint.new(1, 0)    -- Bottom: OPAQUE BLACK
     }
-    SVBlackGradient.Rotation = 0
+    SVBlackGradient.Rotation = 90  -- VERTICAL: Top to Bottom (KEY FIX!)
     SVBlackGradient.Parent = SVBlack
     
     local SVInd = Instance.new("Frame")
