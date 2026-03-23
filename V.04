@@ -1,4 +1,4 @@
--- Dark Gui Library by EX-21 - V.04 + ColorPicker (FINAL HUE FIXED)
+-- Dark Gui Library by EX-21 - V.04 + ColorPicker (FINAL HSV FIXED)
 -- Repository: https://github.com/EX-21/Dark-Gui-by-EX21
 
 local Library = {}
@@ -25,13 +25,29 @@ local Theme = {
 
 local GUIElements = {}
 
--- HSV to RGB conversion
+-- HSV to RGB conversion - FIXED & ACCURATE
 local function HSVtoRGB(h, s, v)
-    local r, g, b = math.abs((h * 6) % 2 - 1) * s - 1, 
-                    math.abs((h * 6) % 2 - 2) * s - 1, 
-                    math.abs((h * 6) % 2 - 3) * s - 1
-    r, g, b = math.clamp(r + 1, 0, 1), math.clamp(g + 1, 0, 1), math.clamp(b + 1, 0, 1)
-    return Color3.fromRGB(r * 255 * v, g * 255 * v, b * 255 * v)
+    local i = math.floor(h * 6)
+    local f = h * 6 - i
+    local p = v * (1 - s)
+    local q = v * (1 - f * s)
+    local t = v * (1 - (1 - f) * s)
+    
+    i = i % 6
+    
+    if i == 0 then
+        return Color3.fromRGB(v * 255, t * 255, p * 255)
+    elseif i == 1 then
+        return Color3.fromRGB(q * 255, v * 255, p * 255)
+    elseif i == 2 then
+        return Color3.fromRGB(p * 255, v * 255, t * 255)
+    elseif i == 3 then
+        return Color3.fromRGB(p * 255, q * 255, v * 255)
+    elseif i == 4 then
+        return Color3.fromRGB(t * 255, p * 255, v * 255)
+    else
+        return Color3.fromRGB(v * 255, p * 255, q * 255)
+    end
 end
 
 local function RGBtoHex(color)
@@ -1179,7 +1195,7 @@ function Library:CreateWindow(config)
     return Window
 end
 
--- ColorPicker Function - HUE SLIDER FIXED
+-- ColorPicker Function - HSVtoRGB FIXED
 function Library:CreateColorPicker(tab, config)
     config = config or {}
     local Title = config.Title or "Color"
@@ -1272,7 +1288,7 @@ function Library:CreateColorPicker(tab, config)
     HexLabel.Parent = PickerFrame
     table.insert(GUIElements, {Instance = HexLabel, Key = "TextDim", Property = "TextColor3"})
     
-    -- Hue Slider - FIXED GRADIENT TO MATCH HSV
+    -- Hue Slider
     local HueSlider = Instance.new("Frame")
     HueSlider.Size = UDim2.new(0, 12, 0, 80)
     HueSlider.Position = UDim2.new(0, 15, 0, 100)
@@ -1282,20 +1298,17 @@ function Library:CreateColorPicker(tab, config)
     HueSlider.Parent = PickerFrame
     MakeRound(HueSlider, 3)
     
-    -- CRITICAL: Gradient colors MUST match HSV color wheel
-    -- Y position 0 (top) = Hue 0 (Red)
-    -- Y position 1 (bottom) = Hue 1 (Red)
     local HueGrad = Instance.new("UIGradient")
     HueGrad.Color = ColorSequence.new{
-        ColorSequenceKeypoint.new(0.00, Color3.fromRGB(255, 0, 0)),     -- Red (top)
-        ColorSequenceKeypoint.new(0.17, Color3.fromRGB(255, 255, 0)),   -- Yellow
-        ColorSequenceKeypoint.new(0.33, Color3.fromRGB(0, 255, 0)),     -- Green
-        ColorSequenceKeypoint.new(0.50, Color3.fromRGB(0, 255, 255)),   -- Cyan
-        ColorSequenceKeypoint.new(0.67, Color3.fromRGB(0, 0, 255)),     -- Blue
-        ColorSequenceKeypoint.new(0.83, Color3.fromRGB(255, 0, 255)),   -- Magenta
-        ColorSequenceKeypoint.new(1.00, Color3.fromRGB(255, 0, 0))      -- Red (bottom)
+        ColorSequenceKeypoint.new(0.00, Color3.fromRGB(255, 0, 0)),
+        ColorSequenceKeypoint.new(0.17, Color3.fromRGB(255, 255, 0)),
+        ColorSequenceKeypoint.new(0.33, Color3.fromRGB(0, 255, 0)),
+        ColorSequenceKeypoint.new(0.50, Color3.fromRGB(0, 255, 255)),
+        ColorSequenceKeypoint.new(0.67, Color3.fromRGB(0, 0, 255)),
+        ColorSequenceKeypoint.new(0.83, Color3.fromRGB(255, 0, 255)),
+        ColorSequenceKeypoint.new(1.00, Color3.fromRGB(255, 0, 0))
     }
-    HueGrad.Rotation = 90  -- Vertical gradient (top to bottom)
+    HueGrad.Rotation = 90
     HueGrad.Parent = HueSlider
     
     local HueInd = Instance.new("Frame")
@@ -1511,7 +1524,7 @@ function Library:CreateColorPicker(tab, config)
         end)
     end)
     
-    -- Drag Hue - FIXED: Y position = Hue value directly
+    -- Drag Hue
     local hDrag = false
     HueSlider.InputBegan:Connect(function(inp)
         if inp.UserInputType == Enum.UserInputType.MouseButton1 or inp.UserInputType == Enum.UserInputType.Touch then
@@ -1519,13 +1532,9 @@ function Library:CreateColorPicker(tab, config)
             local function upd(pos)
                 local absPos = HueSlider.AbsolutePosition
                 local absSize = HueSlider.AbsoluteSize
-                -- Y from top (0) to bottom (1) = Hue from 0 to 1
                 local y = math.clamp((pos.Y - absPos.Y) / absSize.Y, 0, 1)
                 
-                -- Update indicator position
                 HueInd.Position = UDim2.new(0, 0, y, -1.5)
-                
-                -- y IS the hue value
                 UpdateFromHSV(y, currentS, currentV)
             end
             upd(inp.Position)
