@@ -1179,7 +1179,7 @@ function Library:CreateWindow(config)
     return Window
 end
 
--- ColorPicker Function - FIXED SV AREA
+-- ColorPicker Function - FIXED SV AREA WITH UIGRADIENT
 function Library:CreateColorPicker(tab, config)
     config = config or {}
     local Title = config.Title or "Color"
@@ -1305,7 +1305,7 @@ function Library:CreateColorPicker(tab, config)
     HueInd.Parent = HueSlider
     MakeRound(HueInd, 2)
     
-    -- SV Area - FIXED WITH UIGRADIENT
+    -- SV Area - FIXED WITH UIGRADIENT (NO ROTATION ISSUES)
     local SVArea = Instance.new("Frame")
     SVArea.Size = UDim2.new(0, 80, 0, 80)
     SVArea.Position = UDim2.new(0, 32, 0, 100)
@@ -1315,25 +1315,31 @@ function Library:CreateColorPicker(tab, config)
     SVArea.Parent = PickerFrame
     MakeRound(SVArea, 4)
     
-    -- White gradient for saturation (left to right)
-    local SVWhite = Instance.new("ImageLabel")
-    SVWhite.Name = "SVWhite"
-    SVWhite.Size = UDim2.new(1, 0, 1, 0)
-    SVWhite.BackgroundTransparency = 1
-    SVWhite.Image = "rbxassetid://4155801252"
-    SVWhite.ZIndex = 102
-    SVWhite.Parent = SVArea
+    -- White gradient for saturation (LEFT to RIGHT)
+    local SVWhiteGradient = Instance.new("UIGradient")
+    SVWhiteGradient.Color = ColorSequence.new{
+        ColorSequenceKeypoint.new(0, Color3.fromRGB(255, 255, 255)),
+        ColorSequenceKeypoint.new(1, Color3.fromRGB(255, 255, 255))
+    }
+    SVWhiteGradient.Transparency = NumberSequence.new{
+        NumberSequenceKeypoint.new(0, 0),
+        NumberSequenceKeypoint.new(1, 1)
+    }
+    SVWhiteGradient.Rotation = 0
+    SVWhiteGradient.Parent = SVArea
     
-    -- Black gradient for value (top to bottom) - ROTATION 90
-    local SVBlack = Instance.new("ImageLabel")
-    SVBlack.Name = "SVBlack"
-    SVBlack.Size = UDim2.new(1, 0, 1, 0)
-    SVBlack.BackgroundTransparency = 1
-    SVBlack.Image = "rbxassetid://4155801252"
-    SVBlack.ImageColor3 = Color3.fromRGB(0, 0, 0)
-    SVBlack.Rotation = 90
-    SVBlack.ZIndex = 103
-    SVBlack.Parent = SVArea
+    -- Black gradient for value (TOP to BOTTOM)
+    local SVBlackGradient = Instance.new("UIGradient")
+    SVBlackGradient.Color = ColorSequence.new{
+        ColorSequenceKeypoint.new(0, Color3.fromRGB(0, 0, 0)),
+        ColorSequenceKeypoint.new(1, Color3.fromRGB(0, 0, 0))
+    }
+    SVBlackGradient.Transparency = NumberSequence.new{
+        NumberSequenceKeypoint.new(0, 1),
+        NumberSequenceKeypoint.new(1, 0)
+    }
+    SVBlackGradient.Rotation = 0
+    SVBlackGradient.Parent = SVArea
     
     local SVInd = Instance.new("Frame")
     SVInd.Name = "SVInd"
