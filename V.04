@@ -1,4 +1,4 @@
--- Dark Gui Library by EX-21 - V.04 + ColorPicker (FINAL FIXED)
+-- Dark Gui Library by EX-21 - V.04 + ColorPicker (FINAL WORKING)
 -- Repository: https://github.com/EX-21/Dark-Gui-by-EX21
 
 local Library = {}
@@ -1179,7 +1179,7 @@ function Library:CreateWindow(config)
     return Window
 end
 
--- ColorPicker Function
+-- ColorPicker Function - FIXED SV AREA
 function Library:CreateColorPicker(tab, config)
     config = config or {}
     local Title = config.Title or "Color"
@@ -1305,33 +1305,33 @@ function Library:CreateColorPicker(tab, config)
     HueInd.Parent = HueSlider
     MakeRound(HueInd, 2)
     
-    -- SV Area - CRITICAL FIX
+    -- SV Area - FIXED WITH UIGRADIENT
     local SVArea = Instance.new("Frame")
     SVArea.Size = UDim2.new(0, 80, 0, 80)
     SVArea.Position = UDim2.new(0, 32, 0, 100)
-    SVArea.BackgroundColor3 = HSVtoRGB(currentH, 1, 1) -- Set initial hue color
+    SVArea.BackgroundColor3 = HSVtoRGB(currentH, 1, 1)
     SVArea.BorderSizePixel = 0
     SVArea.ZIndex = 101
     SVArea.Parent = PickerFrame
     MakeRound(SVArea, 4)
     
-    -- SV Overlay (white gradient for saturation)
-    local SVOverlay = Instance.new("ImageLabel")
-    SVOverlay.Name = "SVOverlay"
-    SVOverlay.Size = UDim2.new(1, 0, 1, 0)
-    SVOverlay.BackgroundTransparency = 1
-    SVOverlay.Image = "rbxassetid://4155801252"
-    SVOverlay.ZIndex = 102
-    SVOverlay.Parent = SVArea
+    -- White gradient for saturation (left to right)
+    local SVWhite = Instance.new("ImageLabel")
+    SVWhite.Name = "SVWhite"
+    SVWhite.Size = UDim2.new(1, 0, 1, 0)
+    SVWhite.BackgroundTransparency = 1
+    SVWhite.Image = "rbxassetid://4155801252"
+    SVWhite.ZIndex = 102
+    SVWhite.Parent = SVArea
     
-    -- SV Black overlay (for value/brightness)
+    -- Black gradient for value (top to bottom) - ROTATION 90
     local SVBlack = Instance.new("ImageLabel")
     SVBlack.Name = "SVBlack"
     SVBlack.Size = UDim2.new(1, 0, 1, 0)
     SVBlack.BackgroundTransparency = 1
     SVBlack.Image = "rbxassetid://4155801252"
-    SVBlack.ImageColor3 = Color3.fromRGB(0,0,0)
-    SVBlack.Rotation = 180
+    SVBlack.ImageColor3 = Color3.fromRGB(0, 0, 0)
+    SVBlack.Rotation = 90
     SVBlack.ZIndex = 103
     SVBlack.Parent = SVArea
     
@@ -1432,7 +1432,7 @@ function Library:CreateColorPicker(tab, config)
         end
     end)
     
-    -- Update UI from HSV - CRITICAL FUNCTION
+    -- Update UI from HSV
     local function UpdateFromHSV(h, s, v)
         currentH, currentS, currentV = h, s, v
         local color = HSVtoRGB(h, s, v)
