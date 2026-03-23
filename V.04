@@ -24,16 +24,13 @@ local Theme = {
     Warning = Color3.fromRGB(255, 180, 60)
 }
 
--- ColorPicker Helper Functions
+-- ColorPicker Helper Functions - FIXED HSVtoRGB
 local function HSVtoRGB(h, s, v)
     local r, g, b = math.abs((h * 6) % 2 - 1) * s - 1, 
                     math.abs((h * 6) % 2 - 2) * s - 1, 
                     math.abs((h * 6) % 2 - 3) * s - 1
-    return Color3.new(
-        math.clamp(r + 1, 0, 1), 
-        math.clamp(g + 1, 0, 1), 
-        math.clamp(b + 1, 0, 1)
-    ) * v
+    r, g, b = math.clamp(r + 1, 0, 1), math.clamp(g + 1, 0, 1), math.clamp(b + 1, 0, 1)
+    return Color3.fromRGB(r * 255 * v, g * 255 * v, b * 255 * v)
 end
 
 local function RGBtoHex(color)
@@ -1135,7 +1132,7 @@ function Library:CreateWindow(config)
     return Window
 end
 
--- Method: CreateColorPicker - FINAL FIXED: UIListLayout Auto-Working
+-- Method: CreateColorPicker - FINAL FIXED: UIListLayout Auto-Working + HSVtoRGB Fixed
 function Library:CreateColorPicker(tab, config)
     config = config or {}
     local Title = config.Title or "Color"
