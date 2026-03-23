@@ -1335,7 +1335,7 @@ function Library:CreateColorPicker(tab, config)
     SVWhite.Name = "SVWhite"
     SVWhite.Size = UDim2.new(1, 0, 1, 0)
     SVWhite.BackgroundTransparency = 1
-    SVWhite.Image = "rbxassetid://4155801252"
+    SVWhite.Image = ""
     SVWhite.ZIndex = 102
     SVWhite.Parent = SVArea
     
@@ -1345,7 +1345,7 @@ function Library:CreateColorPicker(tab, config)
     SVBlack.Name = "SVBlack"
     SVBlack.Size = UDim2.new(1, 0, 1, 0)
     SVBlack.BackgroundTransparency = 1
-    SVBlack.Image = "rbxassetid://4155801252"
+    SVBlack.Image = ""
     SVBlack.ImageColor3 = Color3.fromRGB(0, 0, 0)
     SVBlack.Rotation = 270  -- ROTATION 270° (NOT 90°!)
     SVBlack.ZIndex = 103
