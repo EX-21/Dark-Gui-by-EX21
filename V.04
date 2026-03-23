@@ -1131,7 +1131,7 @@ function Library:CreateWindow(config)
     return Window
 end
 
--- Method: CreateColorPicker - Untuk membuat color picker di tab mana saja
+-- Method: CreateColorPicker - ZIndex FIXED
 function Library:CreateColorPicker(tab, config)
     config = config or {}
     local Title = config.Title or "Color"
@@ -1153,17 +1153,19 @@ function Library:CreateColorPicker(tab, config)
     ToggleBtn.TextColor3 = Theme.Text
     ToggleBtn.TextSize = 12
     ToggleBtn.Font = Enum.Font.Gotham
+    ToggleBtn.ZIndex = 50
     ToggleBtn.Parent = content
     MakeRound(ToggleBtn, 6)
     AddStroke(ToggleBtn, Theme.Border, 1)
     
-    -- Picker Frame
+    -- Picker Frame - ZIndex HIGH agar tidak tertutup
     local PickerFrame = Instance.new("Frame")
     PickerFrame.Size = UDim2.new(1, 0, 0, 0)
     PickerFrame.BackgroundColor3 = Theme.Input
     PickerFrame.BackgroundTransparency = Transparency
     PickerFrame.BorderSizePixel = 0
     PickerFrame.Visible = false
+    PickerFrame.ZIndex = 200
     PickerFrame.Parent = content
     MakeRound(PickerFrame, 8)
     AddStroke(PickerFrame, Theme.Border, 1)
@@ -1173,6 +1175,7 @@ function Library:CreateColorPicker(tab, config)
     Header.Size = UDim2.new(1, 0, 0, 30)
     Header.BackgroundColor3 = Theme.Sidebar
     Header.BorderSizePixel = 0
+    Header.ZIndex = 201
     Header.Parent = PickerFrame
     MakeRound(Header, 8)
     
@@ -1184,6 +1187,7 @@ function Library:CreateColorPicker(tab, config)
     CloseBtn.Text = "×"
     CloseBtn.TextColor3 = Theme.Text
     CloseBtn.Font = Enum.Font.GothamBold
+    CloseBtn.ZIndex = 202
     CloseBtn.Parent = Header
     MakeRound(CloseBtn, 5)
     
@@ -1193,6 +1197,7 @@ function Library:CreateColorPicker(tab, config)
     PreviewBox.Position = UDim2.new(0, 10, 0, 40)
     PreviewBox.BackgroundColor3 = CurrentColor
     PreviewBox.BorderSizePixel = 0
+    PreviewBox.ZIndex = 201
     PreviewBox.Parent = PickerFrame
     MakeRound(PreviewBox, 6)
     AddStroke(PreviewBox, Theme.Border, 1)
@@ -1205,6 +1210,7 @@ function Library:CreateColorPicker(tab, config)
     HexLabel.TextColor3 = Theme.TextDim
     HexLabel.TextSize = 10
     HexLabel.Font = Enum.Font.Gotham
+    HexLabel.ZIndex = 202
     HexLabel.Parent = PickerFrame
     
     -- Hue Slider
@@ -1213,6 +1219,7 @@ function Library:CreateColorPicker(tab, config)
     HueSlider.Position = UDim2.new(0, 15, 0, 100)
     HueSlider.BackgroundColor3 = Color3.fromRGB(255,255,255)
     HueSlider.BorderSizePixel = 0
+    HueSlider.ZIndex = 201
     HueSlider.Parent = PickerFrame
     MakeRound(HueSlider, 3)
     
@@ -1233,6 +1240,7 @@ function Library:CreateColorPicker(tab, config)
     HueInd.Size = UDim2.new(1, 4, 0, 3)
     HueInd.BackgroundColor3 = Color3.fromRGB(255,255,255)
     HueInd.BorderSizePixel = 0
+    HueInd.ZIndex = 202
     HueInd.Parent = HueSlider
     MakeRound(HueInd, 2)
     
@@ -1242,6 +1250,7 @@ function Library:CreateColorPicker(tab, config)
     SVArea.Position = UDim2.new(0, 32, 0, 100)
     SVArea.BackgroundColor3 = Color3.fromRGB(255,255,255)
     SVArea.BorderSizePixel = 0
+    SVArea.ZIndex = 201
     SVArea.Parent = PickerFrame
     MakeRound(SVArea, 4)
     
@@ -1249,12 +1258,14 @@ function Library:CreateColorPicker(tab, config)
     SVOverlay.Size = UDim2.new(1, 0, 1, 0)
     SVOverlay.BackgroundTransparency = 1
     SVOverlay.Image = "rbxassetid://4155801252"
+    SVOverlay.ZIndex = 201
     SVOverlay.Parent = SVArea
     
     local SVInd = Instance.new("Frame")
     SVInd.Size = UDim2.new(0, 8, 0, 8)
     SVInd.BackgroundColor3 = Color3.fromRGB(255,255,255)
     SVInd.BorderSizePixel = 0
+    SVInd.ZIndex = 202
     SVInd.Parent = SVArea
     MakeRound(SVInd, 4)
     AddStroke(SVInd, Color3.fromRGB(0,0,0), 1)
@@ -1269,6 +1280,7 @@ function Library:CreateColorPicker(tab, config)
         L.TextColor3 = Theme.TextDim
         L.TextSize = 10
         L.Font = Enum.Font.Gotham
+        L.ZIndex = 202
         L.Parent = PickerFrame
         
         local I = Instance.new("TextBox")
@@ -1283,6 +1295,7 @@ function Library:CreateColorPicker(tab, config)
         I.TextSize = 10
         I.Font = Enum.Font.Gotham
         I.ClearTextOnFocus = false
+        I.ZIndex = 202
         I.Parent = PickerFrame
         MakeRound(I, 4)
         
@@ -1316,6 +1329,7 @@ function Library:CreateColorPicker(tab, config)
     HexInp.TextSize = 10
     HexInp.Font = Enum.Font.GothamSemibold
     HexInp.ClearTextOnFocus = false
+    HexInp.ZIndex = 202
     HexInp.Parent = PickerFrame
     MakeRound(HexInp, 4)
     
