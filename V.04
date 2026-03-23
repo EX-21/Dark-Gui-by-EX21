@@ -1,6 +1,6 @@
--- Dark Gui Library by EX-21 - V.04 + ColorPicker Module (FINAL FIXED)
+-- Dark Gui Library by EX-21 - V.04 + ColorPicker Module (FINAL WORKING)
 -- Repository: https://github.com/EX-21/Dark-Gui-by-EX21
--- Fitur: ColorPicker dengan UIListLayout auto-working + Save/Restore/Reset Themes
+-- Fitur: ColorPicker yang benar-benar berfungsi + Save/Restore/Reset Themes
 
 local Library = {}
 local TweenService = game:GetService("TweenService")
@@ -24,7 +24,7 @@ local Theme = {
     Warning = Color3.fromRGB(255, 180, 60)
 }
 
--- ColorPicker Helper Functions - FIXED HSVtoRGB
+-- ColorPicker Helper Functions - FIXED
 local function HSVtoRGB(h, s, v)
     local r, g, b = math.abs((h * 6) % 2 - 1) * s - 1, 
                     math.abs((h * 6) % 2 - 2) * s - 1, 
@@ -1132,7 +1132,7 @@ function Library:CreateWindow(config)
     return Window
 end
 
--- Method: CreateColorPicker - FINAL FIXED: UIListLayout Auto-Working + HSVtoRGB Fixed
+-- Method: CreateColorPicker - FINAL WORKING VERSION
 function Library:CreateColorPicker(tab, config)
     config = config or {}
     local Title = config.Title or "Color"
@@ -1145,7 +1145,7 @@ function Library:CreateColorPicker(tab, config)
     local IsOpen = false
     local content = tab.Content or tab
     
-    -- Toggle Button (direct child of content - UIListLayout will handle it)
+    -- Toggle Button
     local ToggleBtn = Instance.new("TextButton")
     ToggleBtn.Name = "ColorPickerToggle_" .. Title:gsub(" ", "_")
     ToggleBtn.Size = UDim2.new(1, -20, 0, 32)
@@ -1160,38 +1160,215 @@ function Library:CreateColorPicker(tab, config)
     MakeRound(ToggleBtn, 6)
     AddStroke(ToggleBtn, Theme.Border, 1)
     
-    -- Picker Frame (will be added/removed from content - UIListLayout will handle it)
-    local PickerFrame = nil
+    -- Picker Frame (created at start, hidden by default)
+    local PickerFrame = Instance.new("Frame")
+    PickerFrame.Name = "ColorPicker_" .. Title:gsub(" ", "_")
+    PickerFrame.Size = UDim2.new(1, 0, 0, 0)
+    PickerFrame.BackgroundColor3 = Theme.Input
+    PickerFrame.BackgroundTransparency = Transparency
+    PickerFrame.BorderSizePixel = 0
+    PickerFrame.Visible = false
+    PickerFrame.ZIndex = 100
+    PickerFrame.Parent = content
+    
+    -- Header
+    local Header = Instance.new("Frame")
+    Header.Size = UDim2.new(1, 0, 0, 30)
+    Header.BackgroundColor3 = Theme.Sidebar
+    Header.BorderSizePixel = 0
+    Header.ZIndex = 101
+    Header.Parent = PickerFrame
+    MakeRound(Header, 8)
+    
+    local CloseBtn = Instance.new("TextButton")
+    CloseBtn.Size = UDim2.new(0, 24, 0, 24)
+    CloseBtn.Position = UDim2.new(1, -27, 0.5, -12)
+    CloseBtn.BackgroundColor3 = Theme.Primary
+    CloseBtn.BackgroundTransparency = Transparency
+    CloseBtn.Text = "×"
+    CloseBtn.TextColor3 = Theme.Text
+    CloseBtn.Font = Enum.Font.GothamBold
+    CloseBtn.ZIndex = 102
+    CloseBtn.Parent = Header
+    MakeRound(CloseBtn, 5)
+    
+    -- Preview
+    local PreviewBox = Instance.new("Frame")
+    PreviewBox.Name = "PreviewBox"
+    PreviewBox.Size = UDim2.new(0, 50, 0, 50)
+    PreviewBox.Position = UDim2.new(0, 10, 0, 40)
+    PreviewBox.BackgroundColor3 = CurrentColor
+    PreviewBox.BorderSizePixel = 0
+    PreviewBox.ZIndex = 101
+    PreviewBox.Parent = PickerFrame
+    MakeRound(PreviewBox, 6)
+    AddStroke(PreviewBox, Theme.Border, 1)
+    
+    local HexLabel = Instance.new("TextLabel")
+    HexLabel.Name = "HexLabel"
+    HexLabel.Size = UDim2.new(0, 70, 0, 18)
+    HexLabel.Position = UDim2.new(0, 68, 0, 60)
+    HexLabel.BackgroundTransparency = 1
+    HexLabel.Text = RGBtoHex(CurrentColor)
+    HexLabel.TextColor3 = Theme.TextDim
+    HexLabel.TextSize = 10
+    HexLabel.Font = Enum.Font.Gotham
+    HexLabel.ZIndex = 102
+    HexLabel.Parent = PickerFrame
+    
+    -- Hue Slider
+    local HueSlider = Instance.new("Frame")
+    HueSlider.Size = UDim2.new(0, 12, 0, 80)
+    HueSlider.Position = UDim2.new(0, 15, 0, 100)
+    HueSlider.BackgroundColor3 = Color3.fromRGB(255,255,255)
+    HueSlider.BorderSizePixel = 0
+    HueSlider.ZIndex = 101
+    HueSlider.Parent = PickerFrame
+    MakeRound(HueSlider, 3)
+    
+    local HueGrad = Instance.new("UIGradient")
+    HueGrad.Color = ColorSequence.new{
+        ColorSequenceKeypoint.new(0, Color3.fromRGB(255,0,0)),
+        ColorSequenceKeypoint.new(0.17, Color3.fromRGB(255,255,0)),
+        ColorSequenceKeypoint.new(0.33, Color3.fromRGB(0,255,0)),
+        ColorSequenceKeypoint.new(0.5, Color3.fromRGB(0,255,255)),
+        ColorSequenceKeypoint.new(0.67, Color3.fromRGB(0,0,255)),
+        ColorSequenceKeypoint.new(0.83, Color3.fromRGB(255,0,255)),
+        ColorSequenceKeypoint.new(1, Color3.fromRGB(255,0,0))
+    }
+    HueGrad.Rotation = 90
+    HueGrad.Parent = HueSlider
+    
+    local HueInd = Instance.new("Frame")
+    HueInd.Name = "HueInd"
+    HueInd.Size = UDim2.new(1, 4, 0, 3)
+    HueInd.BackgroundColor3 = Color3.fromRGB(255,255,255)
+    HueInd.BorderSizePixel = 0
+    HueInd.ZIndex = 102
+    HueInd.Parent = HueSlider
+    MakeRound(HueInd, 2)
+    
+    -- SV Area
+    local SVArea = Instance.new("Frame")
+    SVArea.Size = UDim2.new(0, 80, 0, 80)
+    SVArea.Position = UDim2.new(0, 32, 0, 100)
+    SVArea.BackgroundColor3 = Color3.fromRGB(255,255,255)
+    SVArea.BorderSizePixel = 0
+    SVArea.ZIndex = 101
+    SVArea.Parent = PickerFrame
+    MakeRound(SVArea, 4)
+    
+    local SVOverlay = Instance.new("ImageLabel")
+    SVOverlay.Name = "SVOverlay"
+    SVOverlay.Size = UDim2.new(1, 0, 1, 0)
+    SVOverlay.BackgroundTransparency = 1
+    SVOverlay.Image = "rbxassetid://4155801252"
+    SVOverlay.ZIndex = 101
+    SVOverlay.Parent = SVArea
+    
+    local SVInd = Instance.new("Frame")
+    SVInd.Name = "SVInd"
+    SVInd.Size = UDim2.new(0, 8, 0, 8)
+    SVInd.BackgroundColor3 = Color3.fromRGB(255,255,255)
+    SVInd.BorderSizePixel = 0
+    SVInd.ZIndex = 102
+    SVInd.Parent = SVArea
+    MakeRound(SVInd, 4)
+    AddStroke(SVInd, Color3.fromRGB(0,0,0), 1)
+    
+    -- RGB Inputs
+    local function RGBInp(lbl, off, ch)
+        local L = Instance.new("TextLabel")
+        L.Size = UDim2.new(0, 16, 0, 16)
+        L.Position = UDim2.new(0, 120, 0, 100+off)
+        L.BackgroundTransparency = 1
+        L.Text = lbl
+        L.TextColor3 = Theme.TextDim
+        L.TextSize = 10
+        L.Font = Enum.Font.Gotham
+        L.ZIndex = 102
+        L.Parent = PickerFrame
+        
+        local I = Instance.new("TextBox")
+        I.Name = ch .. "Inp"
+        I.Size = UDim2.new(0, 35, 0, 16)
+        I.Position = UDim2.new(0, 140, 0, 100+off)
+        I.BackgroundColor3 = Theme.Background
+        I.BackgroundTransparency = Transparency
+        I.Text = tostring(math.floor(CurrentColor[ch]*255))
+        I.PlaceholderText = "0"
+        I.PlaceholderColor3 = Theme.TextDim
+        I.TextColor3 = Theme.Text
+        I.TextSize = 10
+        I.Font = Enum.Font.Gotham
+        I.ClearTextOnFocus = false
+        I.ZIndex = 102
+        I.Parent = PickerFrame
+        MakeRound(I, 4)
+        
+        I.FocusLost:Connect(function(ent)
+            if ent then
+                local v = math.clamp(tonumber(I.Text) or 0, 0, 255)
+                I.Text = tostring(v)
+                local r = ch=="R" and v/255 or CurrentColor.R
+                local g = ch=="G" and v/255 or CurrentColor.G
+                local b = ch=="B" and v/255 or CurrentColor.B
+                UpdateColor(Color3.fromRGB(r*255, g*255, b*255))
+            end
+        end)
+        return I
+    end
+    
+    local RInp = RGBInp("R", 0, "R")
+    local GInp = RGBInp("G", 20, "G")
+    local BInp = RGBInp("B", 40, "B")
+    
+    -- Hex Input
+    local HexInp = Instance.new("TextBox")
+    HexInp.Name = "HexInp"
+    HexInp.Size = UDim2.new(0, 70, 0, 18)
+    HexInp.Position = UDim2.new(0, 120, 0, 165)
+    HexInp.BackgroundColor3 = Theme.Background
+    HexInp.BackgroundTransparency = Transparency
+    HexInp.Text = RGBtoHex(CurrentColor):upper()
+    HexInp.PlaceholderText = "#RRGGBB"
+    HexInp.PlaceholderColor3 = Theme.TextDim
+    HexInp.TextColor3 = Theme.Accent
+    HexInp.TextSize = 10
+    HexInp.Font = Enum.Font.GothamSemibold
+    HexInp.ClearTextOnFocus = false
+    HexInp.ZIndex = 102
+    HexInp.Parent = PickerFrame
+    MakeRound(HexInp, 4)
+    
+    HexInp.FocusLost:Connect(function(ent)
+        if ent then
+            local hx = HexInp.Text:gsub("#","")
+            if #hx == 6 then
+                local ok, res = pcall(function() return HexToColor3("#"..hx) end)
+                if ok and res then UpdateColor(res)
+                else HexInp.Text = RGBtoHex(CurrentColor):upper() end
+            else
+                HexInp.Text = RGBtoHex(CurrentColor):upper()
+            end
+        end
+    end)
     
     -- Update Color Function
     local function UpdateColor(c)
         CurrentColor = c
-        if not PickerFrame then return end
-        
-        local PreviewBox = PickerFrame:FindFirstChild("PreviewBox", true)
-        local HexLabel = PickerFrame:FindFirstChild("HexLabel", true)
-        local HexInp = PickerFrame:FindFirstChild("HexInp", true)
-        local RInp = PickerFrame:FindFirstChild("RInp", true)
-        local GInp = PickerFrame:FindFirstChild("GInp", true)
-        local BInp = PickerFrame:FindFirstChild("BInp", true)
-        
-        if PreviewBox then PreviewBox.BackgroundColor3 = c end
-        if HexLabel then HexLabel.Text = RGBtoHex(c) end
-        if HexInp then HexInp.Text = RGBtoHex(c):upper() end
-        if RInp then RInp.Text = tostring(math.floor(c.R*255)) end
-        if GInp then GInp.Text = tostring(math.floor(c.G*255)) end
-        if BInp then BInp.Text = tostring(math.floor(c.B*255)) end
-        
+        PreviewBox.BackgroundColor3 = c
+        HexLabel.Text = RGBtoHex(c)
+        HexInp.Text = RGBtoHex(c):upper()
+        RInp.Text = tostring(math.floor(c.R*255))
+        GInp.Text = tostring(math.floor(c.G*255))
+        BInp.Text = tostring(math.floor(c.B*255))
         ToggleBtn.Text = "🎨 " .. Title .. "  " .. RGBtoHex(c)
         
         local h,s,v = Color3.toHSV(c)
-        local HueInd = PickerFrame:FindFirstChild("HueInd", true)
-        local SVInd = PickerFrame:FindFirstChild("SVInd", true)
-        local SVOverlay = PickerFrame:FindFirstChild("SVOverlay", true)
-        
-        if HueInd then HueInd.Position = UDim2.new(0, 0, h, -1.5) end
-        if SVInd then SVInd.Position = UDim2.new(s, -4, 1-v, -4) end
-        if SVOverlay then SVOverlay.ImageColor3 = HSVtoRGB(h, 1, 1) end
+        HueInd.Position = UDim2.new(0, 0, h, -1.5)
+        SVInd.Position = UDim2.new(s, -4, 1-v, -4)
+        SVOverlay.ImageColor3 = HSVtoRGB(h, 1, 1)
         
         if ThemeKey and Theme[ThemeKey] then
             Theme[ThemeKey] = c
@@ -1200,272 +1377,82 @@ function Library:CreateColorPicker(tab, config)
         Callback(c, Title, ThemeKey)
     end
     
-    -- Create Picker Frame
-    local function CreatePicker()
-        if PickerFrame then return PickerFrame end
-        
-        PickerFrame = Instance.new("Frame")
-        PickerFrame.Name = "ColorPicker_" .. Title:gsub(" ", "_")
-        PickerFrame.Size = UDim2.new(1, 0, 0, 190)
-        PickerFrame.BackgroundColor3 = Theme.Input
-        PickerFrame.BackgroundTransparency = Transparency
-        PickerFrame.BorderSizePixel = 0
-        PickerFrame.ZIndex = 100
-        PickerFrame.Parent = content
-        MakeRound(PickerFrame, 8)
-        AddStroke(PickerFrame, Theme.Border, 1)
-        
-        -- Header
-        local Header = Instance.new("Frame")
-        Header.Size = UDim2.new(1, 0, 0, 30)
-        Header.BackgroundColor3 = Theme.Sidebar
-        Header.BorderSizePixel = 0
-        Header.ZIndex = 101
-        Header.Parent = PickerFrame
-        MakeRound(Header, 8)
-        
-        local CloseBtn = Instance.new("TextButton")
-        CloseBtn.Size = UDim2.new(0, 24, 0, 24)
-        CloseBtn.Position = UDim2.new(1, -27, 0.5, -12)
-        CloseBtn.BackgroundColor3 = Theme.Primary
-        CloseBtn.BackgroundTransparency = Transparency
-        CloseBtn.Text = "×"
-        CloseBtn.TextColor3 = Theme.Text
-        CloseBtn.Font = Enum.Font.GothamBold
-        CloseBtn.ZIndex = 102
-        CloseBtn.Parent = Header
-        MakeRound(CloseBtn, 5)
-        
-        -- Preview
-        local PreviewBox = Instance.new("Frame")
-        PreviewBox.Name = "PreviewBox"
-        PreviewBox.Size = UDim2.new(0, 50, 0, 50)
-        PreviewBox.Position = UDim2.new(0, 10, 0, 40)
-        PreviewBox.BackgroundColor3 = CurrentColor
-        PreviewBox.BorderSizePixel = 0
-        PreviewBox.ZIndex = 101
-        PreviewBox.Parent = PickerFrame
-        MakeRound(PreviewBox, 6)
-        AddStroke(PreviewBox, Theme.Border, 1)
-        
-        local HexLabel = Instance.new("TextLabel")
-        HexLabel.Name = "HexLabel"
-        HexLabel.Size = UDim2.new(0, 70, 0, 18)
-        HexLabel.Position = UDim2.new(0, 68, 0, 60)
-        HexLabel.BackgroundTransparency = 1
-        HexLabel.Text = RGBtoHex(CurrentColor)
-        HexLabel.TextColor3 = Theme.TextDim
-        HexLabel.TextSize = 10
-        HexLabel.Font = Enum.Font.Gotham
-        HexLabel.ZIndex = 102
-        HexLabel.Parent = PickerFrame
-        
-        -- Hue Slider
-        local HueSlider = Instance.new("Frame")
-        HueSlider.Size = UDim2.new(0, 12, 0, 80)
-        HueSlider.Position = UDim2.new(0, 15, 0, 100)
-        HueSlider.BackgroundColor3 = Color3.fromRGB(255,255,255)
-        HueSlider.BorderSizePixel = 0
-        HueSlider.ZIndex = 101
-        HueSlider.Parent = PickerFrame
-        MakeRound(HueSlider, 3)
-        
-        local HueGrad = Instance.new("UIGradient")
-        HueGrad.Color = ColorSequence.new{
-            ColorSequenceKeypoint.new(0, Color3.fromRGB(255,0,0)),
-            ColorSequenceKeypoint.new(0.17, Color3.fromRGB(255,255,0)),
-            ColorSequenceKeypoint.new(0.33, Color3.fromRGB(0,255,0)),
-            ColorSequenceKeypoint.new(0.5, Color3.fromRGB(0,255,255)),
-            ColorSequenceKeypoint.new(0.67, Color3.fromRGB(0,0,255)),
-            ColorSequenceKeypoint.new(0.83, Color3.fromRGB(255,0,255)),
-            ColorSequenceKeypoint.new(1, Color3.fromRGB(255,0,0))
-        }
-        HueGrad.Rotation = 90
-        HueGrad.Parent = HueSlider
-        
-        local HueInd = Instance.new("Frame")
-        HueInd.Name = "HueInd"
-        HueInd.Size = UDim2.new(1, 4, 0, 3)
-        HueInd.BackgroundColor3 = Color3.fromRGB(255,255,255)
-        HueInd.BorderSizePixel = 0
-        HueInd.ZIndex = 102
-        HueInd.Parent = HueSlider
-        MakeRound(HueInd, 2)
-        
-        -- SV Area
-        local SVArea = Instance.new("Frame")
-        SVArea.Size = UDim2.new(0, 80, 0, 80)
-        SVArea.Position = UDim2.new(0, 32, 0, 100)
-        SVArea.BackgroundColor3 = Color3.fromRGB(255,255,255)
-        SVArea.BorderSizePixel = 0
-        SVArea.ZIndex = 101
-        SVArea.Parent = PickerFrame
-        MakeRound(SVArea, 4)
-        
-        local SVOverlay = Instance.new("ImageLabel")
-        SVOverlay.Name = "SVOverlay"
-        SVOverlay.Size = UDim2.new(1, 0, 1, 0)
-        SVOverlay.BackgroundTransparency = 1
-        SVOverlay.Image = "rbxassetid://4155801252"
-        SVOverlay.ZIndex = 101
-        SVOverlay.Parent = SVArea
-        
-        local SVInd = Instance.new("Frame")
-        SVInd.Name = "SVInd"
-        SVInd.Size = UDim2.new(0, 8, 0, 8)
-        SVInd.BackgroundColor3 = Color3.fromRGB(255,255,255)
-        SVInd.BorderSizePixel = 0
-        SVInd.ZIndex = 102
-        SVInd.Parent = SVArea
-        MakeRound(SVInd, 4)
-        AddStroke(SVInd, Color3.fromRGB(0,0,0), 1)
-        
-        -- RGB Inputs
-        local function RGBInp(lbl, off, ch)
-            local L = Instance.new("TextLabel")
-            L.Size = UDim2.new(0, 16, 0, 16)
-            L.Position = UDim2.new(0, 120, 0, 100+off)
-            L.BackgroundTransparency = 1
-            L.Text = lbl
-            L.TextColor3 = Theme.TextDim
-            L.TextSize = 10
-            L.Font = Enum.Font.Gotham
-            L.ZIndex = 102
-            L.Parent = PickerFrame
-            
-            local I = Instance.new("TextBox")
-            I.Name = ch .. "Inp"
-            I.Size = UDim2.new(0, 35, 0, 16)
-            I.Position = UDim2.new(0, 140, 0, 100+off)
-            I.BackgroundColor3 = Theme.Background
-            I.BackgroundTransparency = Transparency
-            I.Text = tostring(math.floor(CurrentColor[ch]*255))
-            I.PlaceholderText = "0"
-            I.PlaceholderColor3 = Theme.TextDim
-            I.TextColor3 = Theme.Text
-            I.TextSize = 10
-            I.Font = Enum.Font.Gotham
-            I.ClearTextOnFocus = false
-            I.ZIndex = 102
-            I.Parent = PickerFrame
-            MakeRound(I, 4)
-            
-            I.FocusLost:Connect(function(ent)
-                if ent then
-                    local v = math.clamp(tonumber(I.Text) or 0, 0, 255)
-                    I.Text = tostring(v)
-                    local r = ch=="R" and v/255 or CurrentColor.R
-                    local g = ch=="G" and v/255 or CurrentColor.G
-                    local b = ch=="B" and v/255 or CurrentColor.B
-                    UpdateColor(Color3.fromRGB(r*255, g*255, b*255))
-                end
-            end)
-            return I
-        end
-        
-        RGBInp("R", 0, "R")
-        RGBInp("G", 20, "G")
-        RGBInp("B", 40, "B")
-        
-        -- Hex Input
-        local HexInp = Instance.new("TextBox")
-        HexInp.Name = "HexInp"
-        HexInp.Size = UDim2.new(0, 70, 0, 18)
-        HexInp.Position = UDim2.new(0, 120, 0, 165)
-        HexInp.BackgroundColor3 = Theme.Background
-        HexInp.BackgroundTransparency = Transparency
-        HexInp.Text = RGBtoHex(CurrentColor):upper()
-        HexInp.PlaceholderText = "#RRGGBB"
-        HexInp.PlaceholderColor3 = Theme.TextDim
-        HexInp.TextColor3 = Theme.Accent
-        HexInp.TextSize = 10
-        HexInp.Font = Enum.Font.GothamSemibold
-        HexInp.ClearTextOnFocus = false
-        HexInp.ZIndex = 102
-        HexInp.Parent = PickerFrame
-        MakeRound(HexInp, 4)
-        
-        HexInp.FocusLost:Connect(function(ent)
-            if ent then
-                local hx = HexInp.Text:gsub("#","")
-                if #hx == 6 then
-                    local ok, res = pcall(function() return HexToColor3("#"..hx) end)
-                    if ok and res then UpdateColor(res)
-                    else HexInp.Text = RGBtoHex(CurrentColor):upper() end
-                else
-                    HexInp.Text = RGBtoHex(CurrentColor):upper()
-                end
-            end
-        end)
-        
-        -- Close Button Event
-        CloseBtn.MouseButton1Click:Connect(function()
-            IsOpen = false
-            PickerFrame:Destroy()
-            PickerFrame = nil
-        end)
-        
-        -- Drag Hue
-        local hDrag = false
-        HueSlider.InputBegan:Connect(function(inp)
-            if inp.UserInputType == Enum.UserInputType.MouseButton1 or inp.UserInputType == Enum.UserInputType.Touch then
-                hDrag = true
-                local function upd(pos)
-                    local y = math.clamp((pos.Y - HueSlider.AbsolutePosition.Y) / HueSlider.AbsoluteSize.Y, 0, 1)
-                    local h,s,v = Color3.toHSV(CurrentColor)
-                    UpdateColor(HSVtoRGB(y, s, v))
-                end
-                upd(inp.Position)
-                local c = inp.Changed:Connect(function(p)
-                    if p == "UserInputState" and inp.UserInputState == Enum.UserInputState.End then
-                        hDrag = false
-                        c:Disconnect()
-                    end
-                end)
-            end
-        end)
-        
-        -- Drag SV
-        local svDrag = false
-        SVArea.InputBegan:Connect(function(inp)
-            if inp.UserInputType == Enum.UserInputType.MouseButton1 or inp.UserInputType == Enum.UserInputType.Touch then
-                svDrag = true
-                local function upd(pos)
-                    local x = math.clamp((pos.X - SVArea.AbsolutePosition.X) / SVArea.AbsoluteSize.X, 0, 1)
-                    local y = math.clamp((pos.Y - SVArea.AbsolutePosition.Y) / SVArea.AbsoluteSize.Y, 0, 1)
-                    local h,_,_ = Color3.toHSV(CurrentColor)
-                    UpdateColor(HSVtoRGB(h, x, 1-y))
-                end
-                upd(inp.Position)
-                local c = inp.Changed:Connect(function(p)
-                    if p == "UserInputState" and inp.UserInputState == Enum.UserInputState.End then
-                        svDrag = false
-                        c:Disconnect()
-                    end
-                end)
-            end
-        end)
-        
-        return PickerFrame
-    end
-    
     -- Toggle Button Event
     ToggleBtn.MouseButton1Click:Connect(function()
         IsOpen = not IsOpen
+        PickerFrame.Visible = IsOpen
         if IsOpen then
-            CreatePicker()
+            PickerFrame.Size = UDim2.new(1, 0, 0, 190)
             UpdateColor(CurrentColor)
         else
-            if PickerFrame then
-                PickerFrame:Destroy()
-                PickerFrame = nil
+            PickerFrame.Size = UDim2.new(1, 0, 0, 0)
+        end
+        
+        -- Force canvas size update
+        task.defer(function()
+            if content and content:IsA("ScrollingFrame") then
+                content.CanvasSize = UDim2.new(0, 0, 0, content.AbsoluteContentSize.Y + 10)
             end
+        end)
+    end)
+    
+    -- Close Button Event
+    CloseBtn.MouseButton1Click:Connect(function()
+        IsOpen = false
+        PickerFrame.Visible = false
+        PickerFrame.Size = UDim2.new(1, 0, 0, 0)
+        
+        task.defer(function()
+            if content and content:IsA("ScrollingFrame") then
+                content.CanvasSize = UDim2.new(0, 0, 0, content.AbsoluteContentSize.Y + 10)
+            end
+        end)
+    end)
+    
+    -- Drag Hue
+    local hDrag = false
+    HueSlider.InputBegan:Connect(function(inp)
+        if inp.UserInputType == Enum.UserInputType.MouseButton1 or inp.UserInputType == Enum.UserInputType.Touch then
+            hDrag = true
+            local function upd(pos)
+                local y = math.clamp((pos.Y - HueSlider.AbsolutePosition.Y) / HueSlider.AbsoluteSize.Y, 0, 1)
+                local h,s,v = Color3.toHSV(CurrentColor)
+                UpdateColor(HSVtoRGB(y, s, v))
+            end
+            upd(inp.Position)
+            local c = inp.Changed:Connect(function(p)
+                if p == "UserInputState" and inp.UserInputState == Enum.UserInputState.End then
+                    hDrag = false
+                    c:Disconnect()
+                end
+            end)
+        end
+    end)
+    
+    -- Drag SV
+    local svDrag = false
+    SVArea.InputBegan:Connect(function(inp)
+        if inp.UserInputType == Enum.UserInputType.MouseButton1 or inp.UserInputType == Enum.UserInputType.Touch then
+            svDrag = true
+            local function upd(pos)
+                local x = math.clamp((pos.X - SVArea.AbsolutePosition.X) / SVArea.AbsoluteSize.X, 0, 1)
+                local y = math.clamp((pos.Y - SVArea.AbsolutePosition.Y) / SVArea.AbsoluteSize.Y, 0, 1)
+                local h,_,_ = Color3.toHSV(CurrentColor)
+                UpdateColor(HSVtoRGB(h, x, 1-y))
+            end
+            upd(inp.Position)
+            local c = inp.Changed:Connect(function(p)
+                if p == "UserInputState" and inp.UserInputState == Enum.UserInputState.End then
+                    svDrag = false
+                    c:Disconnect()
+                end
+            end)
         end
     end)
     
     -- Init
     task.defer(function() 
-        if not IsOpen and PickerFrame then
+        if IsOpen then
             UpdateColor(CurrentColor)
         end
     end)
@@ -1478,9 +1465,7 @@ function Library:CreateColorPicker(tab, config)
         PickerFrame = PickerFrame,
         Destroy = function()
             ToggleBtn:Destroy()
-            if PickerFrame then
-                PickerFrame:Destroy()
-            end
+            PickerFrame:Destroy()
         end
     }
 end
