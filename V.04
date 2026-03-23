@@ -1,6 +1,6 @@
--- Dark Gui Library by EX-21 - V.04 + ColorPicker Module (FINAL REAL-TIME)
+-- Dark Gui Library by EX-21 - V.04 + ColorPicker (REAL-TIME APPLY)
 -- Repository: https://github.com/EX-21/Dark-Gui-by-EX21
--- Fitur: ColorPicker real-time dengan posisi akurat + Save/Restore/Reset Themes
+-- Fitur: ColorPicker dengan real-time apply ke GUI elements
 
 local Library = {}
 local TweenService = game:GetService("TweenService")
@@ -24,7 +24,10 @@ local Theme = {
     Warning = Color3.fromRGB(255, 180, 60)
 }
 
--- ColorPicker Helper Functions - FIXED
+-- Reference to GUI elements for real-time update
+local GUIElements = {}
+
+-- ColorPicker Helper Functions
 local function HSVtoRGB(h, s, v)
     local r, g, b = math.abs((h * 6) % 2 - 1) * s - 1, 
                     math.abs((h * 6) % 2 - 2) * s - 1, 
@@ -51,6 +54,21 @@ local function HexToColor3(hex)
         return Color3.fromRGB(r, g, b)
     end
     return Color3.fromRGB(255,255,255)
+end
+
+-- Apply Theme to GUI Elements
+local function ApplyTheme()
+    for _, element in ipairs(GUIElements) do
+        if element.Instance and element.Instance.Parent then
+            if element.Property == "BackgroundColor3" then
+                element.Instance.BackgroundColor3 = Theme[element.Key]
+            elseif element.Property == "TextColor3" then
+                element.Instance.TextColor3 = Theme[element.Key]
+            elseif element.Property == "ImageColor3" then
+                element.Instance.ImageColor3 = Theme[element.Key]
+            end
+        end
+    end
 end
 
 -- Helper functions
@@ -196,6 +214,9 @@ function Library:CreateWindow(config)
     MainFrame.Parent = ScreenGui
     MakeRound(MainFrame, 12)
     AddStroke(MainFrame, Theme.Border, 2)
+    
+    -- Track this element
+    table.insert(GUIElements, {Instance = MainFrame, Key = "Background", Property = "BackgroundColor3"})
 
     -- Topbar
     local Topbar = Instance.new("Frame")
@@ -204,6 +225,7 @@ function Library:CreateWindow(config)
     Topbar.BorderSizePixel = 0
     Topbar.Parent = MainFrame
     MakeRound(Topbar, 12)
+    table.insert(GUIElements, {Instance = Topbar, Key = "Sidebar", Property = "BackgroundColor3"})
 
     local TopbarFix = Instance.new("Frame")
     TopbarFix.Size = UDim2.new(1, 0, 0, 10)
@@ -217,9 +239,10 @@ function Library:CreateWindow(config)
     LogoIcon.Size = UDim2.new(0, 22, 0, 22)
     LogoIcon.Position = UDim2.new(0, 12, 0.5, -11)
     LogoIcon.BackgroundTransparency = 1
-    LogoIcon.ImageColor3 = Color3.fromRGB(255, 255, 255)
+    LogoIcon.ImageColor3 = Theme.Text
     LogoIcon.Parent = Topbar
     SetImageSafe(LogoIcon, WindowIcon)
+    table.insert(GUIElements, {Instance = LogoIcon, Key = "Text", Property = "ImageColor3"})
 
     local Title = Instance.new("TextLabel")
     Title.Size = UDim2.new(0, 200, 1, 0)
@@ -231,6 +254,7 @@ function Library:CreateWindow(config)
     Title.Font = Enum.Font.GothamBold
     Title.TextXAlignment = Enum.TextXAlignment.Left
     Title.Parent = Topbar
+    table.insert(GUIElements, {Instance = Title, Key = "Text", Property = "TextColor3"})
 
     -- Minimize Button
     local MinimizeBtn = Instance.new("TextButton")
@@ -241,6 +265,7 @@ function Library:CreateWindow(config)
     MinimizeBtn.Text = ""
     MinimizeBtn.Parent = Topbar
     MakeRound(MinimizeBtn, 7)
+    table.insert(GUIElements, {Instance = MinimizeBtn, Key = "Secondary", Property = "BackgroundColor3"})
 
     local MinimizeIcon = Instance.new("ImageLabel")
     MinimizeIcon.Size = UDim2.new(0, 16, 0, 16)
@@ -249,6 +274,7 @@ function Library:CreateWindow(config)
     MinimizeIcon.ImageColor3 = Theme.Text
     MinimizeIcon.Parent = MinimizeBtn
     SetImageSafe(MinimizeIcon, Icons.Minimize)
+    table.insert(GUIElements, {Instance = MinimizeIcon, Key = "Text", Property = "ImageColor3"})
 
     -- Close Button
     local CloseBtn = Instance.new("TextButton")
@@ -259,14 +285,16 @@ function Library:CreateWindow(config)
     CloseBtn.Text = ""
     CloseBtn.Parent = Topbar
     MakeRound(CloseBtn, 7)
+    table.insert(GUIElements, {Instance = CloseBtn, Key = "Primary", Property = "BackgroundColor3"})
 
     local CloseIcon = Instance.new("ImageLabel")
     CloseIcon.Size = UDim2.new(0, 16, 0, 16)
     CloseIcon.Position = UDim2.new(0.5, -8, 0.5, -8)
     CloseIcon.BackgroundTransparency = 1
-    CloseIcon.ImageColor3 = Color3.fromRGB(255, 255, 255)
+    CloseIcon.ImageColor3 = Theme.Text
     CloseIcon.Parent = CloseBtn
     SetImageSafe(CloseIcon, Icons.Close)
+    table.insert(GUIElements, {Instance = CloseIcon, Key = "Text", Property = "ImageColor3"})
 
     -- Sidebar
     local Sidebar = Instance.new("Frame")
@@ -277,6 +305,7 @@ function Library:CreateWindow(config)
     Sidebar.BorderSizePixel = 0
     Sidebar.Parent = MainFrame
     MakeRound(Sidebar, 12)
+    table.insert(GUIElements, {Instance = Sidebar, Key = "Sidebar", Property = "BackgroundColor3"})
 
     local SidebarList = Instance.new("UIListLayout")
     SidebarList.SortOrder = Enum.SortOrder.LayoutOrder
@@ -343,6 +372,8 @@ function Library:CreateWindow(config)
     FloatingButton.Parent = ScreenGui
     MakeRound(FloatingButton, 25)
     SetImageSafe(FloatingButton, WindowIcon)
+    table.insert(GUIElements, {Instance = FloatingButton, Key = "Primary", Property = "BackgroundColor3"})
+    table.insert(GUIElements, {Instance = FloatingButton, Key = "Text", Property = "ImageColor3"})
 
     local draggingFloat, dragInputFloat, dragStartFloat, startPosFloat
     local function updateFloat(input)
@@ -413,6 +444,7 @@ function Library:CreateWindow(config)
         TabBtn.Text = ""
         TabBtn.Parent = Sidebar
         MakeRound(TabBtn, 7)
+        table.insert(GUIElements, {Instance = TabBtn, Key = "Input", Property = "BackgroundColor3"})
 
         local TabIcon_img = Instance.new("ImageLabel")
         TabIcon_img.Size = UDim2.new(0, 18, 0, 18)
@@ -421,6 +453,7 @@ function Library:CreateWindow(config)
         TabIcon_img.ImageColor3 = Theme.TextDim
         TabIcon_img.Parent = TabBtn
         SetImageSafe(TabIcon_img, TabIcon)
+        table.insert(GUIElements, {Instance = TabIcon_img, Key = "TextDim", Property = "ImageColor3"})
 
         local TabLabel = Instance.new("TextLabel")
         TabLabel.Size = UDim2.new(1, -45, 1, 0)
@@ -432,6 +465,7 @@ function Library:CreateWindow(config)
         TabLabel.Font = Enum.Font.Gotham
         TabLabel.TextXAlignment = Enum.TextXAlignment.Left
         TabLabel.Parent = TabBtn
+        table.insert(GUIElements, {Instance = TabLabel, Key = "TextDim", Property = "TextColor3"})
 
         local TabContent = Instance.new("ScrollingFrame")
         TabContent.Size = UDim2.new(1, 0, 1, 0)
@@ -442,6 +476,7 @@ function Library:CreateWindow(config)
         TabContent.Visible = false
         TabContent.CanvasSize = UDim2.new(0, 0, 0, 0)
         TabContent.Parent = ContentArea
+        table.insert(GUIElements, {Instance = TabContent, Key = "Primary", Property = "ScrollBarImageColor3"})
 
         local ContentList = Instance.new("UIListLayout")
         ContentList.SortOrder = Enum.SortOrder.LayoutOrder
@@ -472,6 +507,7 @@ function Library:CreateWindow(config)
             TabLabel.TextColor3 = Theme.Text
             TabContent.Visible = true
             Window.CurrentTab = Tab
+            ApplyTheme()
         end)
 
         local Tab = {
@@ -497,6 +533,7 @@ function Library:CreateWindow(config)
             Frame.BorderSizePixel = 0
             Frame.Parent = TabContent
             MakeRound(Frame, 6)
+            table.insert(GUIElements, {Instance = Frame, Key = "Input", Property = "BackgroundColor3"})
 
             local Label = Instance.new("TextLabel")
             Label.BackgroundTransparency = 1
@@ -506,6 +543,7 @@ function Library:CreateWindow(config)
             Label.Font = Enum.Font.Gotham
             Label.TextXAlignment = Enum.TextXAlignment.Left
             Label.Parent = Frame
+            table.insert(GUIElements, {Instance = Label, Key = "Text", Property = "TextColor3"})
 
             if Description then
                 Label.Size = UDim2.new(1, -90, 0, 24)
@@ -527,6 +565,7 @@ function Library:CreateWindow(config)
                 Desc.TextXAlignment = Enum.TextXAlignment.Left
                 Desc.TextWrapped = true
                 Desc.Parent = Frame
+                table.insert(GUIElements, {Instance = Desc, Key = "TextDim", Property = "TextColor3"})
             end
 
             local Button = Instance.new("TextButton")
@@ -538,6 +577,7 @@ function Library:CreateWindow(config)
             Button.TextSize = 13
             Button.Font = Enum.Font.GothamBold
             Button.Parent = Frame
+            table.insert(GUIElements, {Instance = Button, Key = "Text", Property = "TextColor3"})
 
             Button.MouseButton1Click:Connect(function()
                 Tween(Frame, {BackgroundColor3 = Theme.Primary}, 0.1)
@@ -565,6 +605,7 @@ function Library:CreateWindow(config)
             Frame.BorderSizePixel = 0
             Frame.Parent = TabContent
             MakeRound(Frame, 6)
+            table.insert(GUIElements, {Instance = Frame, Key = "Input", Property = "BackgroundColor3"})
 
             local Label = Instance.new("TextLabel")
             Label.BackgroundTransparency = 1
@@ -574,6 +615,7 @@ function Library:CreateWindow(config)
             Label.Font = Enum.Font.Gotham
             Label.TextXAlignment = Enum.TextXAlignment.Left
             Label.Parent = Frame
+            table.insert(GUIElements, {Instance = Label, Key = "Text", Property = "TextColor3"})
 
             if Description then
                 Label.Size = UDim2.new(1, -90, 0, 24)
@@ -595,6 +637,7 @@ function Library:CreateWindow(config)
                 Desc.TextXAlignment = Enum.TextXAlignment.Left
                 Desc.TextWrapped = true
                 Desc.Parent = Frame
+                table.insert(GUIElements, {Instance = Desc, Key = "TextDim", Property = "TextColor3"})
             end
 
             local ToggleBtn = Instance.new("TextButton")
@@ -605,6 +648,7 @@ function Library:CreateWindow(config)
             ToggleBtn.Text = ""
             ToggleBtn.Parent = Frame
             MakeRound(ToggleBtn, 9)
+            table.insert(GUIElements, {Instance = ToggleBtn, Key = "Primary", Property = "BackgroundColor3"})
 
             local Circle = Instance.new("Frame")
             Circle.Size = UDim2.new(0, 14, 0, 14)
@@ -613,6 +657,7 @@ function Library:CreateWindow(config)
             Circle.BorderSizePixel = 0
             Circle.Parent = ToggleBtn
             MakeRound(Circle, 7)
+            table.insert(GUIElements, {Instance = Circle, Key = "Text", Property = "BackgroundColor3"})
 
             local toggled = Default
             ToggleBtn.MouseButton1Click:Connect(function()
@@ -647,6 +692,7 @@ function Library:CreateWindow(config)
             Frame.BorderSizePixel = 0
             Frame.Parent = TabContent
             MakeRound(Frame, 6)
+            table.insert(GUIElements, {Instance = Frame, Key = "Input", Property = "BackgroundColor3"})
 
             local Label = Instance.new("TextLabel")
             Label.BackgroundTransparency = 1
@@ -657,6 +703,7 @@ function Library:CreateWindow(config)
             Label.TextXAlignment = Enum.TextXAlignment.Left
             Label.TextYAlignment = Enum.TextYAlignment.Top
             Label.Parent = Frame
+            table.insert(GUIElements, {Instance = Label, Key = "Text", Property = "TextColor3"})
 
             if Description then
                 Label.Size = UDim2.new(1, -90, 0, 20)
@@ -678,6 +725,7 @@ function Library:CreateWindow(config)
                 Desc.TextXAlignment = Enum.TextXAlignment.Left
                 Desc.TextWrapped = true
                 Desc.Parent = Frame
+                table.insert(GUIElements, {Instance = Desc, Key = "TextDim", Property = "TextColor3"})
             end
 
             local InputContainer = Instance.new("Frame")
@@ -702,6 +750,9 @@ function Library:CreateWindow(config)
             Input.ClearTextOnFocus = false
             Input.Parent = InputContainer
             MakeRound(Input, 5)
+            table.insert(GUIElements, {Instance = Input, Key = "Background", Property = "BackgroundColor3"})
+            table.insert(GUIElements, {Instance = Input, Key = "Text", Property = "TextColor3"})
+            table.insert(GUIElements, {Instance = Input, Key = "TextDim", Property = "PlaceholderColor3"})
 
             local Measurer = Instance.new("TextLabel")
             Measurer.BackgroundTransparency = 1
@@ -752,6 +803,7 @@ function Library:CreateWindow(config)
             Frame.BorderSizePixel = 0
             Frame.Parent = TabContent
             MakeRound(Frame, 6)
+            table.insert(GUIElements, {Instance = Frame, Key = "Input", Property = "BackgroundColor3"})
 
             local Label = Instance.new("TextLabel")
             Label.BackgroundTransparency = 1
@@ -761,6 +813,7 @@ function Library:CreateWindow(config)
             Label.Font = Enum.Font.Gotham
             Label.TextXAlignment = Enum.TextXAlignment.Left
             Label.Parent = Frame
+            table.insert(GUIElements, {Instance = Label, Key = "Text", Property = "TextColor3"})
 
             if Description then
                 Label.Size = UDim2.new(1, -90, 0, 24)
@@ -782,6 +835,7 @@ function Library:CreateWindow(config)
                 Desc.TextXAlignment = Enum.TextXAlignment.Left
                 Desc.TextWrapped = true
                 Desc.Parent = Frame
+                table.insert(GUIElements, {Instance = Desc, Key = "TextDim", Property = "TextColor3"})
             end
 
             local ValueLabel = Instance.new("TextLabel")
@@ -794,6 +848,7 @@ function Library:CreateWindow(config)
             ValueLabel.Font = Enum.Font.GothamBold
             ValueLabel.TextXAlignment = Enum.TextXAlignment.Right
             ValueLabel.Parent = Frame
+            table.insert(GUIElements, {Instance = ValueLabel, Key = "Accent", Property = "TextColor3"})
 
             local dragging = false
             Frame.InputBegan:Connect(function(input)
@@ -845,6 +900,7 @@ function Library:CreateWindow(config)
             Frame.BorderSizePixel = 0
             Frame.Parent = TabContent
             MakeRound(Frame, 6)
+            table.insert(GUIElements, {Instance = Frame, Key = "Input", Property = "BackgroundColor3"})
 
             local Label = Instance.new("TextLabel")
             Label.BackgroundTransparency = 1
@@ -854,6 +910,7 @@ function Library:CreateWindow(config)
             Label.Font = Enum.Font.Gotham
             Label.TextXAlignment = Enum.TextXAlignment.Left
             Label.Parent = Frame
+            table.insert(GUIElements, {Instance = Label, Key = "Text", Property = "TextColor3"})
 
             if Description then
                 Label.Size = UDim2.new(1, -90, 0, 20)
@@ -875,6 +932,7 @@ function Library:CreateWindow(config)
                 Desc.TextXAlignment = Enum.TextXAlignment.Left
                 Desc.TextWrapped = true
                 Desc.Parent = Frame
+                table.insert(GUIElements, {Instance = Desc, Key = "TextDim", Property = "TextColor3"})
             end
 
             local Button = Instance.new("TextButton")
@@ -887,6 +945,7 @@ function Library:CreateWindow(config)
             Button.Parent = Frame
             MakeRound(Button, 5)
             AddStroke(Button, Theme.Border, 1)
+            table.insert(GUIElements, {Instance = Button, Key = "Background", Property = "BackgroundColor3"})
 
             local Selected = Instance.new("TextLabel")
             Selected.Size = UDim2.new(1, -20, 1, 0)
@@ -899,6 +958,7 @@ function Library:CreateWindow(config)
             Selected.TextXAlignment = Enum.TextXAlignment.Left
             Selected.TextXAlignment = Enum.TextXAlignment.Center
             Selected.Parent = Button
+            table.insert(GUIElements, {Instance = Selected, Key = "Text", Property = "TextColor3"})
 
             local Chevron = Instance.new("ImageLabel")
             Chevron.Size = UDim2.new(0, 12, 0, 12)
@@ -907,6 +967,7 @@ function Library:CreateWindow(config)
             Chevron.ImageColor3 = Theme.TextDim
             Chevron.Parent = Button
             SetImageSafe(Chevron, Icons.ChevronDown)
+            table.insert(GUIElements, {Instance = Chevron, Key = "TextDim", Property = "ImageColor3"})
 
             local Container = Instance.new("ScrollingFrame")
             Container.BackgroundTransparency = 1
@@ -1039,6 +1100,7 @@ function Library:CreateWindow(config)
             Label.TextXAlignment = Enum.TextXAlignment.Left
             Label.TextWrapped = true
             Label.Parent = LabelFrame
+            table.insert(GUIElements, {Instance = Label, Key = "TextDim", Property = "TextColor3"})
 
             return {
                 Set = function(newText)
@@ -1056,6 +1118,7 @@ function Library:CreateWindow(config)
             Frame.BorderSizePixel = 0
             Frame.Parent = TabContent
             MakeRound(Frame, 6)
+            table.insert(GUIElements, {Instance = Frame, Key = "Input", Property = "BackgroundColor3"})
 
             local Title = Instance.new("TextLabel")
             Title.Size = UDim2.new(1, -10, 0, 18)
@@ -1067,6 +1130,7 @@ function Library:CreateWindow(config)
             Title.Font = Enum.Font.GothamBold
             Title.TextXAlignment = Enum.TextXAlignment.Left
             Title.Parent = Frame
+            table.insert(GUIElements, {Instance = Title, Key = "Text", Property = "TextColor3"})
 
             local Content = Instance.new("TextLabel")
             Content.Size = UDim2.new(1, -20, 1, -30)
@@ -1080,6 +1144,7 @@ function Library:CreateWindow(config)
             Content.TextYAlignment = Enum.TextYAlignment.Top
             Content.TextWrapped = true
             Content.Parent = Frame
+            table.insert(GUIElements, {Instance = Content, Key = "TextDim", Property = "TextColor3"})
 
             return {
                 Set = function(t, c)
@@ -1107,6 +1172,7 @@ function Library:CreateWindow(config)
             SectionLabel.Font = Enum.Font.GothamBold
             SectionLabel.TextXAlignment = Enum.TextXAlignment.Left
             SectionLabel.Parent = SectionFrame
+            table.insert(GUIElements, {Instance = SectionLabel, Key = "Text", Property = "TextColor3"})
 
             return {
                 Set = function(newTitle)
@@ -1124,6 +1190,7 @@ function Library:CreateWindow(config)
             TabLabel.TextColor3 = Theme.Text
             TabContent.Visible = true
             Window.CurrentTab = Tab
+            ApplyTheme()
         end
 
         return Tab
@@ -1132,7 +1199,7 @@ function Library:CreateWindow(config)
     return Window
 end
 
--- Method: CreateColorPicker - FINAL REAL-TIME VERSION
+-- Method: CreateColorPicker - REAL-TIME APPLY VERSION
 function Library:CreateColorPicker(tab, config)
     config = config or {}
     local Title = config.Title or "Color"
@@ -1160,6 +1227,8 @@ function Library:CreateColorPicker(tab, config)
     ToggleBtn.Parent = content
     MakeRound(ToggleBtn, 6)
     AddStroke(ToggleBtn, Theme.Border, 1)
+    table.insert(GUIElements, {Instance = ToggleBtn, Key = "Input", Property = "BackgroundColor3"})
+    table.insert(GUIElements, {Instance = ToggleBtn, Key = "Text", Property = "TextColor3"})
     
     -- Picker Frame
     local PickerFrame = Instance.new("Frame")
@@ -1171,6 +1240,7 @@ function Library:CreateColorPicker(tab, config)
     PickerFrame.Visible = false
     PickerFrame.ZIndex = 100
     PickerFrame.Parent = content
+    table.insert(GUIElements, {Instance = PickerFrame, Key = "Input", Property = "BackgroundColor3"})
     
     -- Header
     local Header = Instance.new("Frame")
@@ -1180,6 +1250,7 @@ function Library:CreateColorPicker(tab, config)
     Header.ZIndex = 101
     Header.Parent = PickerFrame
     MakeRound(Header, 8)
+    table.insert(GUIElements, {Instance = Header, Key = "Sidebar", Property = "BackgroundColor3"})
     
     local CloseBtn = Instance.new("TextButton")
     CloseBtn.Size = UDim2.new(0, 24, 0, 24)
@@ -1192,6 +1263,8 @@ function Library:CreateColorPicker(tab, config)
     CloseBtn.ZIndex = 102
     CloseBtn.Parent = Header
     MakeRound(CloseBtn, 5)
+    table.insert(GUIElements, {Instance = CloseBtn, Key = "Primary", Property = "BackgroundColor3"})
+    table.insert(GUIElements, {Instance = CloseBtn, Key = "Text", Property = "TextColor3"})
     
     -- Preview
     local PreviewBox = Instance.new("Frame")
@@ -1216,6 +1289,7 @@ function Library:CreateColorPicker(tab, config)
     HexLabel.Font = Enum.Font.Gotham
     HexLabel.ZIndex = 102
     HexLabel.Parent = PickerFrame
+    table.insert(GUIElements, {Instance = HexLabel, Key = "TextDim", Property = "TextColor3"})
     
     -- Hue Slider
     local HueSlider = Instance.new("Frame")
@@ -1291,6 +1365,7 @@ function Library:CreateColorPicker(tab, config)
         L.Font = Enum.Font.Gotham
         L.ZIndex = 102
         L.Parent = PickerFrame
+        table.insert(GUIElements, {Instance = L, Key = "TextDim", Property = "TextColor3"})
         
         local I = Instance.new("TextBox")
         I.Name = ch .. "Inp"
@@ -1308,6 +1383,9 @@ function Library:CreateColorPicker(tab, config)
         I.ZIndex = 102
         I.Parent = PickerFrame
         MakeRound(I, 4)
+        table.insert(GUIElements, {Instance = I, Key = "Background", Property = "BackgroundColor3"})
+        table.insert(GUIElements, {Instance = I, Key = "Text", Property = "TextColor3"})
+        table.insert(GUIElements, {Instance = I, Key = "TextDim", Property = "PlaceholderColor3"})
         
         I.FocusLost:Connect(function(ent)
             if ent then
@@ -1343,6 +1421,9 @@ function Library:CreateColorPicker(tab, config)
     HexInp.ZIndex = 102
     HexInp.Parent = PickerFrame
     MakeRound(HexInp, 4)
+    table.insert(GUIElements, {Instance = HexInp, Key = "Background", Property = "BackgroundColor3"})
+    table.insert(GUIElements, {Instance = HexInp, Key = "Accent", Property = "TextColor3"})
+    table.insert(GUIElements, {Instance = HexInp, Key = "TextDim", Property = "PlaceholderColor3"})
     
     HexInp.FocusLost:Connect(function(ent)
         if ent then
@@ -1368,9 +1449,13 @@ function Library:CreateColorPicker(tab, config)
         BInp.Text = tostring(math.floor(c.B*255))
         ToggleBtn.Text = "🎨 " .. Title .. "  " .. RGBtoHex(c)
         
+        -- Update Theme table
         if ThemeKey and Theme[ThemeKey] then
             Theme[ThemeKey] = c
         end
+        
+        -- Apply to all GUI elements
+        ApplyTheme()
         
         Callback(c, Title, ThemeKey)
     end
@@ -1554,6 +1639,7 @@ function Library:RestoreTheme(jsonString)
             Theme[key] = Color3.fromRGB(rgb.R, rgb.G, rgb.B)
         end
     end
+    ApplyTheme()
     return true
 end
 
@@ -1575,6 +1661,7 @@ function Library:ResetTheme()
     for key, color in pairs(defaultTheme) do
         Theme[key] = color
     end
+    ApplyTheme()
 end
 
 -- Ekspos Theme dan Helper Functions
