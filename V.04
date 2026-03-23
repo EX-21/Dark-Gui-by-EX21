@@ -1,3 +1,7 @@
+-- Dark Gui Library by EX-21 - V.05 + ColorPicker (Improved Layout & Clickability)
+-- Repository: https://github.com/EX-21/Dark-Gui-by-EX21
+-- Perbaikan: Color picker inline, tombol di bawah turun otomatis, semua elemen bisa diklik
+
 local Library = {}
 local TweenService = game:GetService("TweenService")
 local UserInputService = game:GetService("UserInputService")
@@ -1131,7 +1135,7 @@ function Library:CreateWindow(config)
     return Window
 end
 
--- Method: CreateColorPicker - ZIndex FIXED
+-- Method: CreateColorPicker - IMPROVED: Inline layout, clickable, auto-expand
 function Library:CreateColorPicker(tab, config)
     config = config or {}
     local Title = config.Title or "Color"
@@ -1144,6 +1148,13 @@ function Library:CreateColorPicker(tab, config)
     local IsOpen = false
     local content = tab.Content or tab
     
+    -- Main Container Frame (untuk UIListLayout)
+    local Container = Instance.new("Frame")
+    Container.Size = UDim2.new(1, 0, 0, 32)
+    Container.BackgroundTransparency = 1
+    Container.BorderSizePixel = 0
+    Container.Parent = content
+    
     -- Toggle Button
     local ToggleBtn = Instance.new("TextButton")
     ToggleBtn.Size = UDim2.new(1, -20, 0, 32)
@@ -1154,28 +1165,26 @@ function Library:CreateColorPicker(tab, config)
     ToggleBtn.TextSize = 12
     ToggleBtn.Font = Enum.Font.Gotham
     ToggleBtn.ZIndex = 50
-    ToggleBtn.Parent = content
+    ToggleBtn.Parent = Container
     MakeRound(ToggleBtn, 6)
     AddStroke(ToggleBtn, Theme.Border, 1)
     
-    -- Picker Frame - ZIndex HIGH agar tidak tertutup
+    -- Picker Frame (akan expand di dalam Container)
     local PickerFrame = Instance.new("Frame")
     PickerFrame.Size = UDim2.new(1, 0, 0, 0)
     PickerFrame.BackgroundColor3 = Theme.Input
     PickerFrame.BackgroundTransparency = Transparency
     PickerFrame.BorderSizePixel = 0
     PickerFrame.Visible = false
-    PickerFrame.ZIndex = 200
-    PickerFrame.Parent = content
-    MakeRound(PickerFrame, 8)
-    AddStroke(PickerFrame, Theme.Border, 1)
+    PickerFrame.ZIndex = 100
+    PickerFrame.Parent = Container
     
     -- Header
     local Header = Instance.new("Frame")
     Header.Size = UDim2.new(1, 0, 0, 30)
     Header.BackgroundColor3 = Theme.Sidebar
     Header.BorderSizePixel = 0
-    Header.ZIndex = 201
+    Header.ZIndex = 101
     Header.Parent = PickerFrame
     MakeRound(Header, 8)
     
@@ -1187,7 +1196,7 @@ function Library:CreateColorPicker(tab, config)
     CloseBtn.Text = "×"
     CloseBtn.TextColor3 = Theme.Text
     CloseBtn.Font = Enum.Font.GothamBold
-    CloseBtn.ZIndex = 202
+    CloseBtn.ZIndex = 102
     CloseBtn.Parent = Header
     MakeRound(CloseBtn, 5)
     
@@ -1197,7 +1206,7 @@ function Library:CreateColorPicker(tab, config)
     PreviewBox.Position = UDim2.new(0, 10, 0, 40)
     PreviewBox.BackgroundColor3 = CurrentColor
     PreviewBox.BorderSizePixel = 0
-    PreviewBox.ZIndex = 201
+    PreviewBox.ZIndex = 101
     PreviewBox.Parent = PickerFrame
     MakeRound(PreviewBox, 6)
     AddStroke(PreviewBox, Theme.Border, 1)
@@ -1210,7 +1219,7 @@ function Library:CreateColorPicker(tab, config)
     HexLabel.TextColor3 = Theme.TextDim
     HexLabel.TextSize = 10
     HexLabel.Font = Enum.Font.Gotham
-    HexLabel.ZIndex = 202
+    HexLabel.ZIndex = 102
     HexLabel.Parent = PickerFrame
     
     -- Hue Slider
@@ -1219,7 +1228,7 @@ function Library:CreateColorPicker(tab, config)
     HueSlider.Position = UDim2.new(0, 15, 0, 100)
     HueSlider.BackgroundColor3 = Color3.fromRGB(255,255,255)
     HueSlider.BorderSizePixel = 0
-    HueSlider.ZIndex = 201
+    HueSlider.ZIndex = 101
     HueSlider.Parent = PickerFrame
     MakeRound(HueSlider, 3)
     
@@ -1240,7 +1249,7 @@ function Library:CreateColorPicker(tab, config)
     HueInd.Size = UDim2.new(1, 4, 0, 3)
     HueInd.BackgroundColor3 = Color3.fromRGB(255,255,255)
     HueInd.BorderSizePixel = 0
-    HueInd.ZIndex = 202
+    HueInd.ZIndex = 102
     HueInd.Parent = HueSlider
     MakeRound(HueInd, 2)
     
@@ -1250,7 +1259,7 @@ function Library:CreateColorPicker(tab, config)
     SVArea.Position = UDim2.new(0, 32, 0, 100)
     SVArea.BackgroundColor3 = Color3.fromRGB(255,255,255)
     SVArea.BorderSizePixel = 0
-    SVArea.ZIndex = 201
+    SVArea.ZIndex = 101
     SVArea.Parent = PickerFrame
     MakeRound(SVArea, 4)
     
@@ -1258,14 +1267,14 @@ function Library:CreateColorPicker(tab, config)
     SVOverlay.Size = UDim2.new(1, 0, 1, 0)
     SVOverlay.BackgroundTransparency = 1
     SVOverlay.Image = "rbxassetid://4155801252"
-    SVOverlay.ZIndex = 201
+    SVOverlay.ZIndex = 101
     SVOverlay.Parent = SVArea
     
     local SVInd = Instance.new("Frame")
     SVInd.Size = UDim2.new(0, 8, 0, 8)
     SVInd.BackgroundColor3 = Color3.fromRGB(255,255,255)
     SVInd.BorderSizePixel = 0
-    SVInd.ZIndex = 202
+    SVInd.ZIndex = 102
     SVInd.Parent = SVArea
     MakeRound(SVInd, 4)
     AddStroke(SVInd, Color3.fromRGB(0,0,0), 1)
@@ -1280,7 +1289,7 @@ function Library:CreateColorPicker(tab, config)
         L.TextColor3 = Theme.TextDim
         L.TextSize = 10
         L.Font = Enum.Font.Gotham
-        L.ZIndex = 202
+        L.ZIndex = 102
         L.Parent = PickerFrame
         
         local I = Instance.new("TextBox")
@@ -1295,7 +1304,7 @@ function Library:CreateColorPicker(tab, config)
         I.TextSize = 10
         I.Font = Enum.Font.Gotham
         I.ClearTextOnFocus = false
-        I.ZIndex = 202
+        I.ZIndex = 102
         I.Parent = PickerFrame
         MakeRound(I, 4)
         
@@ -1329,7 +1338,7 @@ function Library:CreateColorPicker(tab, config)
     HexInp.TextSize = 10
     HexInp.Font = Enum.Font.GothamSemibold
     HexInp.ClearTextOnFocus = false
-    HexInp.ZIndex = 202
+    HexInp.ZIndex = 102
     HexInp.Parent = PickerFrame
     MakeRound(HexInp, 4)
     
@@ -1371,22 +1380,22 @@ function Library:CreateColorPicker(tab, config)
         Callback(c, Title, ThemeKey)
     end
     
-    -- Toggle Button Event
+    -- Toggle Button Event - EXPAND/COLLAPSE CONTAINER
     ToggleBtn.MouseButton1Click:Connect(function()
         IsOpen = not IsOpen
         PickerFrame.Visible = IsOpen
         if IsOpen then 
             UpdateColor(CurrentColor)
-            PickerFrame.Size = UDim2.new(1, 0, 0, 190)
+            Container.Size = UDim2.new(1, 0, 0, 222) -- 32 (toggle) + 190 (picker)
         else
-            PickerFrame.Size = UDim2.new(1, 0, 0, 0)
+            Container.Size = UDim2.new(1, 0, 0, 32) -- hanya toggle
         end
     end)
     
     CloseBtn.MouseButton1Click:Connect(function()
         IsOpen = false
         PickerFrame.Visible = false
-        PickerFrame.Size = UDim2.new(1, 0, 0, 0)
+        Container.Size = UDim2.new(1, 0, 0, 32)
     end)
     
     -- Drag Hue
@@ -1438,10 +1447,9 @@ function Library:CreateColorPicker(tab, config)
         SetColor = UpdateColor,
         GetColor = function() return CurrentColor end,
         ToggleBtn = ToggleBtn,
-        PickerFrame = PickerFrame,
+        Container = Container,
         Destroy = function()
-            ToggleBtn:Destroy()
-            PickerFrame:Destroy()
+            Container:Destroy()
         end
     }
 end
