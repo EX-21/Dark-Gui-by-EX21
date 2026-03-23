@@ -1,6 +1,6 @@
--- Dark Gui Library by EX-21 - V.04 + ColorPicker Module (FINAL WORKING)
+-- Dark Gui Library by EX-21 - V.04 + ColorPicker Module (FINAL REAL-TIME)
 -- Repository: https://github.com/EX-21/Dark-Gui-by-EX21
--- Fitur: ColorPicker yang benar-benar berfungsi + Save/Restore/Reset Themes
+-- Fitur: ColorPicker real-time dengan posisi akurat + Save/Restore/Reset Themes
 
 local Library = {}
 local TweenService = game:GetService("TweenService")
@@ -1132,7 +1132,7 @@ function Library:CreateWindow(config)
     return Window
 end
 
--- Method: CreateColorPicker - FINAL WORKING VERSION
+-- Method: CreateColorPicker - FINAL REAL-TIME VERSION
 function Library:CreateColorPicker(tab, config)
     config = config or {}
     local Title = config.Title or "Color"
@@ -1144,6 +1144,7 @@ function Library:CreateColorPicker(tab, config)
     local CurrentColor = Default
     local IsOpen = false
     local content = tab.Content or tab
+    local isDragging = false
     
     -- Toggle Button
     local ToggleBtn = Instance.new("TextButton")
@@ -1160,7 +1161,7 @@ function Library:CreateColorPicker(tab, config)
     MakeRound(ToggleBtn, 6)
     AddStroke(ToggleBtn, Theme.Border, 1)
     
-    -- Picker Frame (created at start, hidden by default)
+    -- Picker Frame
     local PickerFrame = Instance.new("Frame")
     PickerFrame.Name = "ColorPicker_" .. Title:gsub(" ", "_")
     PickerFrame.Size = UDim2.new(1, 0, 0, 0)
@@ -1277,6 +1278,8 @@ function Library:CreateColorPicker(tab, config)
     AddStroke(SVInd, Color3.fromRGB(0,0,0), 1)
     
     -- RGB Inputs
+    local RInp, GInp, BInp, HexInp
+    
     local function RGBInp(lbl, off, ch)
         local L = Instance.new("TextLabel")
         L.Size = UDim2.new(0, 16, 0, 16)
@@ -1313,18 +1316,18 @@ function Library:CreateColorPicker(tab, config)
                 local r = ch=="R" and v/255 or CurrentColor.R
                 local g = ch=="G" and v/255 or CurrentColor.G
                 local b = ch=="B" and v/255 or CurrentColor.B
-                UpdateColor(Color3.fromRGB(r*255, g*255, b*255))
+                UpdateColorFull(Color3.fromRGB(r*255, g*255, b*255))
             end
         end)
         return I
     end
     
-    local RInp = RGBInp("R", 0, "R")
-    local GInp = RGBInp("G", 20, "G")
-    local BInp = RGBInp("B", 40, "B")
+    RInp = RGBInp("R", 0, "R")
+    GInp = RGBInp("G", 20, "G")
+    BInp = RGBInp("B", 40, "B")
     
     -- Hex Input
-    local HexInp = Instance.new("TextBox")
+    HexInp = Instance.new("TextBox")
     HexInp.Name = "HexInp"
     HexInp.Size = UDim2.new(0, 70, 0, 18)
     HexInp.Position = UDim2.new(0, 120, 0, 165)
@@ -1346,7 +1349,7 @@ function Library:CreateColorPicker(tab, config)
             local hx = HexInp.Text:gsub("#","")
             if #hx == 6 then
                 local ok, res = pcall(function() return HexToColor3("#"..hx) end)
-                if ok and res then UpdateColor(res)
+                if ok and res then UpdateColorFull(res)
                 else HexInp.Text = RGBtoHex(CurrentColor):upper() end
             else
                 HexInp.Text = RGBtoHex(CurrentColor):upper()
@@ -1354,8 +1357,8 @@ function Library:CreateColorPicker(tab, config)
         end
     end)
     
-    -- Update Color Function
-    local function UpdateColor(c)
+    -- Update Color ONLY (for dragging - real-time)
+    local function UpdateColorDirect(c)
         CurrentColor = c
         PreviewBox.BackgroundColor3 = c
         HexLabel.Text = RGBtoHex(c)
@@ -1365,16 +1368,25 @@ function Library:CreateColorPicker(tab, config)
         BInp.Text = tostring(math.floor(c.B*255))
         ToggleBtn.Text = "🎨 " .. Title .. "  " .. RGBtoHex(c)
         
-        local h,s,v = Color3.toHSV(c)
-        HueInd.Position = UDim2.new(0, 0, h, -1.5)
-        SVInd.Position = UDim2.new(s, -4, 1-v, -4)
-        SVOverlay.ImageColor3 = HSVtoRGB(h, 1, 1)
-        
         if ThemeKey and Theme[ThemeKey] then
             Theme[ThemeKey] = c
         end
         
         Callback(c, Title, ThemeKey)
+    end
+    
+    -- Update Indicators ONLY (for display)
+    local function UpdateIndicatorsOnly()
+        local h,s,v = Color3.toHSV(CurrentColor)
+        HueInd.Position = UDim2.new(0, 0, h, -1.5)
+        SVInd.Position = UDim2.new(s, -4, 1-v, -4)
+        SVOverlay.ImageColor3 = HSVtoRGB(h, 1, 1)
+    end
+    
+    -- Full Update (for initial load and external changes)
+    local function UpdateColorFull(c)
+        UpdateColorDirect(c)
+        UpdateIndicatorsOnly()
     end
     
     -- Toggle Button Event
@@ -1383,12 +1395,11 @@ function Library:CreateColorPicker(tab, config)
         PickerFrame.Visible = IsOpen
         if IsOpen then
             PickerFrame.Size = UDim2.new(1, 0, 0, 190)
-            UpdateColor(CurrentColor)
+            UpdateColorFull(CurrentColor)
         else
             PickerFrame.Size = UDim2.new(1, 0, 0, 0)
         end
         
-        -- Force canvas size update
         task.defer(function()
             if content and content:IsA("ScrollingFrame") then
                 content.CanvasSize = UDim2.new(0, 0, 0, content.AbsoluteContentSize.Y + 10)
@@ -1409,42 +1420,86 @@ function Library:CreateColorPicker(tab, config)
         end)
     end)
     
-    -- Drag Hue
+    -- Drag Hue - REAL TIME & ACCURATE
     local hDrag = false
     HueSlider.InputBegan:Connect(function(inp)
         if inp.UserInputType == Enum.UserInputType.MouseButton1 or inp.UserInputType == Enum.UserInputType.Touch then
             hDrag = true
+            isDragging = true
             local function upd(pos)
-                local y = math.clamp((pos.Y - HueSlider.AbsolutePosition.Y) / HueSlider.AbsoluteSize.Y, 0, 1)
-                local h,s,v = Color3.toHSV(CurrentColor)
-                UpdateColor(HSVtoRGB(y, s, v))
+                local absPos = HueSlider.AbsolutePosition
+                local absSize = HueSlider.AbsoluteSize
+                local y = math.clamp((pos.Y - absPos.Y) / absSize.Y, 0, 1)
+                
+                -- Update indicator position directly
+                HueInd.Position = UDim2.new(0, 0, y, -1.5)
+                
+                -- Get current SV from indicator
+                local svPos = SVInd.Position
+                local s = svPos.X.Scale
+                local v = 1 - svPos.Y.Scale
+                
+                -- Convert to color
+                local newColor = HSVtoRGB(y, s, v)
+                UpdateColorDirect(newColor)
             end
             upd(inp.Position)
-            local c = inp.Changed:Connect(function(p)
-                if p == "UserInputState" and inp.UserInputState == Enum.UserInputState.End then
+            
+            local moveConn, endConn
+            moveConn = UserInputService.InputChanged:Connect(function(input)
+                if hDrag and (input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch) then
+                    upd(input.Position)
+                end
+            end)
+            
+            endConn = UserInputService.InputEnded:Connect(function(input)
+                if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
                     hDrag = false
-                    c:Disconnect()
+                    isDragging = false
+                    moveConn:Disconnect()
+                    endConn:Disconnect()
                 end
             end)
         end
     end)
     
-    -- Drag SV
+    -- Drag SV - REAL TIME & ACCURATE
     local svDrag = false
     SVArea.InputBegan:Connect(function(inp)
         if inp.UserInputType == Enum.UserInputType.MouseButton1 or inp.UserInputType == Enum.UserInputType.Touch then
             svDrag = true
+            isDragging = true
             local function upd(pos)
-                local x = math.clamp((pos.X - SVArea.AbsolutePosition.X) / SVArea.AbsoluteSize.X, 0, 1)
-                local y = math.clamp((pos.Y - SVArea.AbsolutePosition.Y) / SVArea.AbsoluteSize.Y, 0, 1)
-                local h,_,_ = Color3.toHSV(CurrentColor)
-                UpdateColor(HSVtoRGB(h, x, 1-y))
+                local absPos = SVArea.AbsolutePosition
+                local absSize = SVArea.AbsoluteSize
+                local x = math.clamp((pos.X - absPos.X) / absSize.X, 0, 1)
+                local y = math.clamp((pos.Y - absPos.Y) / absSize.Y, 0, 1)
+                
+                -- Update indicator position directly
+                SVInd.Position = UDim2.new(x, -4, y, -4)
+                
+                -- Get current Hue from indicator
+                local h = HueInd.Position.Y.Scale
+                
+                -- Convert to color (y is inverted for Value)
+                local newColor = HSVtoRGB(h, x, 1-y)
+                UpdateColorDirect(newColor)
             end
             upd(inp.Position)
-            local c = inp.Changed:Connect(function(p)
-                if p == "UserInputState" and inp.UserInputState == Enum.UserInputState.End then
+            
+            local moveConn, endConn
+            moveConn = UserInputService.InputChanged:Connect(function(input)
+                if svDrag and (input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch) then
+                    upd(input.Position)
+                end
+            end)
+            
+            endConn = UserInputService.InputEnded:Connect(function(input)
+                if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
                     svDrag = false
-                    c:Disconnect()
+                    isDragging = false
+                    moveConn:Disconnect()
+                    endConn:Disconnect()
                 end
             end)
         end
@@ -1453,13 +1508,13 @@ function Library:CreateColorPicker(tab, config)
     -- Init
     task.defer(function() 
         if IsOpen then
-            UpdateColor(CurrentColor)
+            UpdateColorFull(CurrentColor)
         end
     end)
     
     -- Return API
     return {
-        SetColor = UpdateColor,
+        SetColor = UpdateColorFull,
         GetColor = function() return CurrentColor end,
         ToggleBtn = ToggleBtn,
         PickerFrame = PickerFrame,
